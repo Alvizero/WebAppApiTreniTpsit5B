@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrenoTrucker — Monitoraggio Treni Italia</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Icone vettoriali leggere da CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Font: DM Serif Display (titoli) + DM Mono (dati) + DM Sans (corpo) -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon"><i class="fa-solid fa-train-subway"></i></span>
+        <span class="logo-text">Treno<em>Tucker</em></span>
+      </div>
+      <p class="header-tagline">Monitoraggio treni in tempo reale · Italia</p>
+    </div>
+    <!-- Barra decorativa animata -->
+    <div class="header-rail">
+      <span class="rail-train" aria-hidden="true">🚄</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════
+       NAVIGAZIONE TAB
+  ═══════════════════════════════════════════════════════ -->
+  <nav class="tab-nav" role="tablist" aria-label="Sezioni principali">
+    <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="treno"    aria-controls="tab-treno">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Cerca Treno</span>
+    </button>
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="stazione" aria-controls="tab-stazione">
+      <i class="fa-solid fa-signs-post"></i>
+      <span>Tabellone Stazione</span>
+    </button>
+    <button class="tab-btn"        role="tab" aria-selected="false" data-tab="viaggio"  aria-controls="tab-viaggio">
+      <i class="fa-solid fa-route"></i>
+      <span>Soluzioni Viaggio</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════
+       CONTENUTO PRINCIPALE
+  ═══════════════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- ── TAB 1: Ricerca per numero treno ──────────────────── -->
+    <section id="tab-treno" class="tab-panel active" role="tabpanel" aria-labelledby="btn-treno">
+      <div class="panel-header">
+        <h2>Ricerca Treno per Numero</h2>
+        <p>Inserisci il numero del treno per seguirne lo stato in tempo reale.</p>
+      </div>
+
+      <div class="search-bar">
+        <div class="input-wrapper">
+          <i class="fa-solid fa-hashtag input-icon"></i>
+          <input
+            type="number"
+            id="input-numero-treno"
+            placeholder="Es. 9620, 666, 2034…"
+            min="1"
+            autocomplete="off"
+          />
+        </div>
+        <button class="btn-primary" id="btn-cerca-treno">
+          <i class="fa-solid fa-satellite-dish"></i> Traccia Treno
+        </button>
+      </div>
+
+      <!-- Risultato ricerca treno -->
+      <div id="result-treno" class="result-area" aria-live="polite"></div>
+    </section>
+
+    <!-- ── TAB 2: Tabellone stazione ────────────────────────── -->
+    <section id="tab-stazione" class="tab-panel" role="tabpanel" aria-labelledby="btn-stazione">
+      <div class="panel-header">
+        <h2>Tabellone Stazione</h2>
+        <p>Cerca una stazione e consulta partenze e arrivi in tempo reale.</p>
+      </div>
+
+      <div class="search-bar">
+        <div class="input-wrapper autocomplete-wrap">
+          <i class="fa-solid fa-location-dot input-icon"></i>
+          <input
+            type="text"
+            id="input-stazione"
+            placeholder="Es. Milano Centrale, Roma Termini…"
+            autocomplete="off"
+          />
+          <!-- Dropdown autocompletamento -->
+          <ul class="autocomplete-list" id="autocomplete-stazione" role="listbox" hidden></ul>
+        </div>
+        <!-- Campo nascosto per l'ID stazione selezionata -->
+        <input type="hidden" id="hidden-stazione-id" />
+        <button class="btn-primary" id="btn-cerca-stazione">
+          <i class="fa-solid fa-display"></i> Mostra Tabellone
+        </button>
+      </div>
+
+      <!-- Toggle Partenze/Arrivi -->
+      <div class="toggle-group" id="toggle-dir" hidden>
+        <button class="toggle-btn active" data-dir="partenze">
+          <i class="fa-solid fa-plane-departure"></i> Partenze
+        </button>
+        <button class="toggle-btn" data-dir="arrivi">
+          <i class="fa-solid fa-plane-arrival"></i> Arrivi
+        </button>
+      </div>
+
+      <div id="result-stazione" class="result-area" aria-live="polite"></div>
+    </section>
+
+    <!-- ── TAB 3: Soluzioni viaggio ─────────────────────────── -->
+    <section id="tab-viaggio" class="tab-panel" role="tabpanel" aria-labelledby="btn-viaggio">
+      <div class="panel-header">
+        <h2>Soluzioni di Viaggio</h2>
+        <p>Pianifica il tuo viaggio trovando le migliori connessioni disponibili.</p>
+      </div>
+
+      <div class="viaggio-form">
+        <!-- Stazione di Partenza -->
+        <div class="form-row">
+          <label for="input-orig">Da</label>
+          <div class="input-wrapper autocomplete-wrap">
+            <i class="fa-solid fa-circle-dot input-icon"></i>
+            <input
+              type="text"
+              id="input-orig"
+              placeholder="Stazione di partenza…"
+              autocomplete="off"
+            />
+            <ul class="autocomplete-list" id="autocomplete-orig" role="listbox" hidden></ul>
+          </div>
+          <input type="hidden" id="hidden-orig-id" />
+        </div>
+
+        <!-- Swap button -->
+        <div class="swap-row">
+          <button class="btn-swap" id="btn-swap" title="Inverti partenza e arrivo">
+            <i class="fa-solid fa-arrows-up-down"></i>
+          </button>
+        </div>
+
+        <!-- Stazione di Arrivo -->
+        <div class="form-row">
+          <label for="input-dest">A</label>
+          <div class="input-wrapper autocomplete-wrap">
+            <i class="fa-solid fa-location-pin input-icon"></i>
+            <input
+              type="text"
+              id="input-dest"
+              placeholder="Stazione di arrivo…"
+              autocomplete="off"
+            />
+            <ul class="autocomplete-list" id="autocomplete-dest" role="listbox" hidden></ul>
+          </div>
+          <input type="hidden" id="hidden-dest-id" />
+        </div>
+
+        <!-- Data e ora -->
+        <div class="form-row">
+          <label for="input-data">Quando</label>
+          <div class="input-wrapper">
+            <i class="fa-solid fa-calendar-days input-icon"></i>
+            <input type="datetime-local" id="input-data" />
+          </div>
+        </div>
+
+        <button class="btn-primary btn-full" id="btn-cerca-viaggio">
+          <i class="fa-solid fa-compass"></i> Cerca Soluzioni
+        </button>
+      </div>
+
+      <div id="result-viaggio" class="result-area" aria-live="polite"></div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <p>
+      Dati forniti dall'API non ufficiale di
+      <strong>Viaggiatreno / Trenitalia</strong>.
+      Uso esclusivamente a scopo informativo.
+    </p>
+    <p class="footer-sub">TrenoTrucker &copy; 2025 — Made with ❤️ in Italia</p>
+  </footer>
+
+  <!-- Toast notifiche -->
+  <div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
