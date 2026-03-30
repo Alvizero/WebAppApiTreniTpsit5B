@@ -1,0 +1,848 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   style.css — TrenoTracker
+   Estetica: Industriale / Tabellone ferroviario vintage × modernità digitale
+   Palette: Nero carbone + Giallo segnalazione + Rosso allarme + Bianco sporco
+   Font: DM Serif Display (display) · DM Mono (dati) · DM Sans (UI)
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Reset & Variabili ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --coal:       #0e0e0e;
+  --charcoal:   #1a1a1a;
+  --iron:       #2a2a2a;
+  --steel:      #3d3d3d;
+  --mist:       #6b6b6b;
+  --chalk:      #e8e4db;
+  --cream:      #f5f2ed;
+  --white:      #ffffff;
+
+  --signal:     #f5c518;    /* giallo ferroviario */
+  --signal-dim: #c9a014;
+  --go:         #22c55e;    /* verde puntuale */
+  --warn:       #f97316;    /* arancio lieve ritardo */
+  --danger:     #ef4444;    /* rosso ritardo */
+  --info:       #3b82f6;    /* blu info */
+
+  --radius-sm:  4px;
+  --radius:     8px;
+  --radius-lg:  14px;
+  --shadow-md:  0 4px 20px rgba(0,0,0,.45);
+  --shadow-lg:  0 8px 40px rgba(0,0,0,.6);
+
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'DM Mono', 'Courier New', monospace;
+
+  --transition:   .2s ease;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--coal);
+  color: var(--chalk);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+  /* Sottile texture grano */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(245,197,24,.06) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%230e0e0e'/%3E%3Crect x='0' y='0' width='1' height='1' fill='%23ffffff08'/%3E%3C/svg%3E");
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+.site-header {
+  background: var(--charcoal);
+  border-bottom: 3px solid var(--signal);
+  position: relative;
+  overflow: hidden;
+}
+
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+  color: var(--signal);
+  line-height: 1;
+  animation: pulse-icon 3s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+  0%, 100% { opacity: 1; transform: translateX(0); }
+  50%       { opacity: .7; transform: translateX(2px); }
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  color: var(--white);
+  letter-spacing: -.5px;
+  line-height: 1;
+}
+.logo-text em {
+  font-style: italic;
+  color: var(--signal);
+}
+
+.header-tagline {
+  font-size: .8rem;
+  font-weight: 300;
+  color: var(--mist);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+/* Binario animato in fondo all'header */
+.header-rail {
+  height: 28px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--iron) 0px,
+    var(--iron) 40px,
+    var(--charcoal) 40px,
+    var(--charcoal) 60px
+  );
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid var(--steel);
+}
+
+.rail-train {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  animation: train-run 8s linear infinite;
+  white-space: nowrap;
+}
+
+@keyframes train-run {
+  from { left: -5%; }
+  to   { left: 105%; }
+}
+
+/* ── Navigazione Tab ─────────────────────────────────────────────────────── */
+.tab-nav {
+  background: var(--charcoal);
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--iron);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: .9rem 1.2rem;
+  background: transparent;
+  color: var(--mist);
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: .82rem;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--chalk);
+  background: rgba(245,197,24,.05);
+}
+
+.tab-btn.active {
+  color: var(--signal);
+  border-bottom-color: var(--signal);
+  background: rgba(245,197,24,.07);
+}
+
+/* ── Contenuto principale ────────────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* ── Pannelli Tab ────────────────────────────────────────────────────────── */
+.tab-panel {
+  display: none;
+  animation: fadeIn .3s ease;
+}
+.tab-panel.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--iron);
+}
+
+.panel-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  color: var(--white);
+  margin-bottom: .3rem;
+  line-height: 1.2;
+}
+
+.panel-header p {
+  font-size: .9rem;
+  color: var(--mist);
+}
+
+/* ── Search Bar ──────────────────────────────────────────────────────────── */
+.search-bar {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+
+.input-icon {
+  position: absolute;
+  left: .9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--mist);
+  font-size: .85rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"] {
+  width: 100%;
+  padding: .85rem 1rem .85rem 2.5rem;
+  background: var(--charcoal);
+  color: var(--chalk);
+  border: 1.5px solid var(--iron);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: .95rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="datetime-local"]:focus {
+  border-color: var(--signal);
+  box-shadow: 0 0 0 3px rgba(245,197,24,.15);
+}
+
+input::placeholder { color: var(--steel); }
+
+/* Spegni lo spinner dei number input */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* ── Pulsanti ────────────────────────────────────────────────────────────── */
+.btn-primary {
+  padding: .85rem 1.5rem;
+  background: var(--signal);
+  color: var(--coal);
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: .9rem;
+  font-weight: 600;
+  letter-spacing: .03em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: #f7d028;
+  box-shadow: 0 4px 20px rgba(245,197,24,.35);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
+.btn-primary.btn-full { width: 100%; justify-content: center; margin-top: .5rem; }
+
+.btn-primary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Autocompletamento ───────────────────────────────────────────────────── */
+.autocomplete-wrap { position: relative; }
+
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--charcoal);
+  border: 1.5px solid var(--signal);
+  border-radius: var(--radius);
+  list-style: none;
+  z-index: 100;
+  max-height: 240px;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.autocomplete-list li {
+  padding: .7rem 1rem;
+  cursor: pointer;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  border-bottom: 1px solid var(--iron);
+  transition: background var(--transition);
+}
+.autocomplete-list li:last-child { border-bottom: none; }
+.autocomplete-list li:hover,
+.autocomplete-list li[aria-selected="true"] {
+  background: rgba(245,197,24,.12);
+  color: var(--signal);
+}
+
+.autocomplete-list li .station-id {
+  font-family: var(--font-mono);
+  font-size: .75rem;
+  color: var(--mist);
+  margin-left: auto;
+}
+
+/* ── Toggle Partenze/Arrivi ──────────────────────────────────────────────── */
+.toggle-group {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+}
+
+.toggle-btn {
+  padding: .55rem 1.2rem;
+  background: transparent;
+  color: var(--mist);
+  border: 1.5px solid var(--iron);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: .85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  transition: all var(--transition);
+}
+
+.toggle-btn.active {
+  background: var(--signal);
+  color: var(--coal);
+  border-color: var(--signal);
+  font-weight: 600;
+}
+
+.toggle-btn:not(.active):hover {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+
+/* ── Viaggio Form ────────────────────────────────────────────────────────── */
+.viaggio-form {
+  background: var(--charcoal);
+  border: 1.5px solid var(--iron);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: .6rem;
+  align-items: center;
+}
+
+.form-row label {
+  font-family: var(--font-mono);
+  font-size: .9rem;
+  font-weight: 500;
+  color: var(--signal);
+  text-align: center;
+}
+
+.swap-row {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 32px;
+}
+
+.btn-swap {
+  background: var(--iron);
+  color: var(--chalk);
+  border: none;
+  border-radius: var(--radius-sm);
+  width: 34px; height: 34px;
+  cursor: pointer;
+  font-size: .9rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition), color var(--transition);
+}
+.btn-swap:hover { background: var(--signal); color: var(--coal); }
+
+/* ── Aree Risultati ──────────────────────────────────────────────────────── */
+.result-area {
+  min-height: 80px;
+}
+
+/* ── Loader ──────────────────────────────────────────────────────────────── */
+.loader {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: 2rem;
+  color: var(--mist);
+  font-size: .9rem;
+}
+
+.loader-dots {
+  display: flex; gap: 4px;
+}
+
+.loader-dots span {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--signal);
+  animation: dot-bounce .8s ease-in-out infinite;
+}
+.loader-dots span:nth-child(2) { animation-delay: .15s; }
+.loader-dots span:nth-child(3) { animation-delay: .3s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(.8); opacity: .5; }
+  40%           { transform: scale(1.2); opacity: 1; }
+}
+
+/* ── Card Treno ──────────────────────────────────────────────────────────── */
+.treno-card {
+  background: var(--charcoal);
+  border: 1.5px solid var(--iron);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.treno-card-header {
+  padding: 1.2rem 1.5rem;
+  background: var(--iron);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.treno-numero {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--signal);
+  line-height: 1;
+}
+
+.treno-info {
+  flex: 1;
+}
+
+.treno-nome {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.treno-percorso {
+  font-size: .82rem;
+  color: var(--mist);
+  margin-top: .2rem;
+}
+
+.badge-ritardo {
+  padding: .35rem .8rem;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: .85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge-puntuale  { background: rgba(34,197,94,.15);  color: var(--go);    border: 1px solid rgba(34,197,94,.3); }
+.badge-lieve     { background: rgba(249,115,22,.15); color: var(--warn);  border: 1px solid rgba(249,115,22,.3); }
+.badge-ritardo-g { background: rgba(239,68,68,.15);  color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+.badge-soppresso { background: rgba(107,107,107,.2); color: var(--mist);  border: 1px solid rgba(107,107,107,.3); }
+
+.treno-card-meta {
+  padding: .8rem 1.5rem;
+  background: rgba(0,0,0,.2);
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--iron);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .82rem;
+  color: var(--mist);
+}
+
+.meta-item i { color: var(--signal); font-size: .75rem; }
+.meta-item strong { color: var(--chalk); }
+
+/* ── Tabella Fermate ─────────────────────────────────────────────────────── */
+.fermate-title {
+  padding: 1rem 1.5rem .5rem;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--mist);
+}
+
+.fermate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+}
+
+.fermate-table th {
+  padding: .6rem 1.5rem;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mist);
+  background: rgba(0,0,0,.15);
+  border-bottom: 1px solid var(--iron);
+}
+
+.fermate-table td {
+  padding: .7rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  vertical-align: middle;
+}
+
+.fermate-table tr:last-child td { border-bottom: none; }
+
+.fermate-table tr.fermata-passata { opacity: .5; }
+.fermate-table tr.fermata-corrente {
+  background: rgba(245,197,24,.06);
+}
+
+.fermata-nome {
+  font-weight: 500;
+  color: var(--chalk);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.fermata-corrente-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 8px var(--signal);
+  flex-shrink: 0;
+  animation: blink 1.5s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.orario-programmato { font-family: var(--font-mono); font-size: .88rem; color: var(--mist); }
+.orario-effettivo   { font-family: var(--font-mono); font-size: .88rem; }
+.orario-effettivo.in-orario  { color: var(--go); }
+.orario-effettivo.in-ritardo { color: var(--danger); }
+.orario-effettivo.anticipo   { color: var(--info); }
+
+.binario-chip {
+  display: inline-block;
+  padding: .15rem .5rem;
+  background: var(--iron);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--chalk);
+}
+
+/* ── Tabellone Stazione ──────────────────────────────────────────────────── */
+.tabellone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.tabellone-stazione-nome {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--white);
+}
+
+.tabellone-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+  background: var(--charcoal);
+  border: 1.5px solid var(--iron);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.tabellone-table th {
+  padding: .7rem 1.2rem;
+  text-align: left;
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--mist);
+  background: var(--iron);
+  border-bottom: 1.5px solid var(--steel);
+}
+
+.tabellone-table td {
+  padding: .75rem 1.2rem;
+  border-bottom: 1px solid var(--iron);
+  vertical-align: middle;
+}
+
+.tabellone-table tr:last-child td { border-bottom: none; }
+.tabellone-table tr:hover td { background: rgba(255,255,255,.025); }
+
+/* ── Card Soluzioni Viaggio ──────────────────────────────────────────────── */
+.soluzione-card {
+  background: var(--charcoal);
+  border: 1.5px solid var(--iron);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: border-color var(--transition);
+}
+.soluzione-card:hover { border-color: var(--steel); }
+
+.soluzione-header {
+  padding: 1rem 1.5rem;
+  background: var(--iron);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.soluzione-orari {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex: 1;
+}
+
+.soluzione-ora {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--white);
+}
+
+.soluzione-freccia {
+  color: var(--mist);
+  font-size: .85rem;
+}
+
+.soluzione-durata {
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  color: var(--mist);
+  background: rgba(0,0,0,.3);
+  padding: .2rem .6rem;
+  border-radius: 20px;
+}
+
+.soluzione-cambi {
+  font-size: .8rem;
+  color: var(--mist);
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+}
+.soluzione-cambi i { color: var(--warn); }
+.zero-cambi i { color: var(--go); }
+
+.soluzione-legs {
+  padding: .8rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  font-size: .85rem;
+  color: var(--mist);
+}
+
+.leg-item i { color: var(--signal); width: 14px; text-align: center; }
+
+.leg-treno {
+  font-family: var(--font-mono);
+  font-size: .82rem;
+  background: rgba(245,197,24,.1);
+  color: var(--signal);
+  padding: .1rem .45rem;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Messaggi Errore / Info ──────────────────────────────────────────────── */
+.msg-box {
+  padding: 1.2rem 1.5rem;
+  border-radius: var(--radius);
+  font-size: .9rem;
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.msg-box i { margin-top: .1rem; flex-shrink: 0; }
+
+.msg-error {
+  background: rgba(239,68,68,.1);
+  border: 1px solid rgba(239,68,68,.25);
+  color: #fca5a5;
+}
+.msg-error i { color: var(--danger); }
+
+.msg-info {
+  background: rgba(59,130,246,.1);
+  border: 1px solid rgba(59,130,246,.25);
+  color: #93c5fd;
+}
+.msg-info i { color: var(--info); }
+
+.msg-empty {
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--iron);
+  color: var(--mist);
+}
+.msg-empty i { color: var(--mist); }
+
+/* ── Toast ───────────────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  z-index: 999;
+}
+
+.toast {
+  background: var(--iron);
+  color: var(--chalk);
+  padding: .75rem 1.2rem;
+  border-radius: var(--radius);
+  font-size: .88rem;
+  box-shadow: var(--shadow-md);
+  border-left: 3px solid var(--signal);
+  animation: slideIn .25s ease;
+  max-width: 300px;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.site-footer {
+  background: var(--charcoal);
+  border-top: 1px solid var(--iron);
+  padding: 1.5rem;
+  text-align: center;
+  font-size: .8rem;
+  color: var(--mist);
+}
+.site-footer strong { color: var(--chalk); }
+.footer-sub { margin-top: .3rem; font-size: .75rem; }
+
+/* ── Scrollbar personalizzata ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--charcoal); }
+::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--mist); }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .logo-text { font-size: 1.7rem; }
+  .panel-header h2 { font-size: 1.5rem; }
+  .search-bar { flex-direction: column; }
+  .btn-primary { width: 100%; justify-content: center; }
+
+  .fermate-table th:nth-child(3),
+  .fermate-table td:nth-child(3) { display: none; } /* nasconde "effettivo" su mobile */
+
+  .tabellone-table th:nth-child(4),
+  .tabellone-table td:nth-child(4) { display: none; } /* nasconde binario su mobile */
+
+  .treno-card-header { flex-direction: column; align-items: flex-start; }
+  .soluzione-header { flex-direction: column; align-items: flex-start; }
+}
