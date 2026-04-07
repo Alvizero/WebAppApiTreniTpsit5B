@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FraParid Train sys — Monitoraggio Treni Italia</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <!-- Clash Display (bold editorial) + Space Mono (data) + Instrument Sans (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════ THEME TOGGLE -->
+  <button class="theme-toggle" id="theme-toggle" aria-label="Cambia tema">
+    <i class="fa-solid fa-sun" id="theme-icon"></i>
+  </button>
+
+  <!-- ═══════════════════════════════════ AMBIENT BG -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="grid-lines"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════ HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <div class="logo-lockup">
+          <div class="logo-badge">
+            <i class="fa-solid fa-train-subway"></i>
+          </div>
+          <div class="logo-text-group">
+            <span class="logo-main">FraParid</span>
+            <span class="logo-sub">Train <em>System</em></span>
+          </div>
+        </div>
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          Live
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-stat">
+          <span class="stat-label">Rete</span>
+          <span class="stat-value">Trenitalia</span>
+        </div>
+        <div class="header-stat">
+          <span class="stat-label">Copertura</span>
+          <span class="stat-value">Italia</span>
+        </div>
+        <div class="header-clock" id="live-clock">--:--</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════ NAV -->
+  <nav class="tab-nav" role="tablist" aria-label="Sezioni principali">
+    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="treno" aria-controls="tab-treno">
+      <span class="tab-num">01</span>
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span class="tab-label">Cerca Treno</span>
+      <span class="tab-indicator"></span>
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="stazione" aria-controls="tab-stazione">
+      <span class="tab-num">02</span>
+      <i class="fa-solid fa-signs-post"></i>
+      <span class="tab-label">Tabellone</span>
+      <span class="tab-indicator"></span>
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="viaggio" aria-controls="tab-viaggio">
+      <span class="tab-num">03</span>
+      <i class="fa-solid fa-route"></i>
+      <span class="tab-label">Soluzioni Viaggio</span>
+      <span class="tab-indicator"></span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════ MAIN -->
+  <main class="main-content">
+
+    <!-- ── TAB 1: Ricerca treno ── -->
+    <section id="tab-treno" class="tab-panel active" role="tabpanel">
+      <div class="panel-header">
+        <div class="panel-header-text">
+          <h2>Traccia <em>Treno</em></h2>
+          <p>Inserisci il numero del treno per seguirne lo stato in tempo reale</p>
+        </div>
+        <div class="panel-deco">
+          <span class="deco-tag">REAL-TIME</span>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <div class="input-wrapper">
+          <i class="fa-solid fa-hashtag input-icon"></i>
+          <input type="number" id="input-numero-treno" placeholder="Es. 5967, 9620, 666…" min="1" autocomplete="off" />
+          <span class="input-glow"></span>
+        </div>
+        <button class="btn-primary" id="btn-cerca-treno">
+          <span class="btn-inner">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <span>Traccia</span>
+          </span>
+          <span class="btn-shimmer"></span>
+        </button>
+      </div>
+
+      <div id="result-treno" class="result-area" aria-live="polite"></div>
+    </section>
+
+    <!-- ── TAB 2: Tabellone stazione ── -->
+    <section id="tab-stazione" class="tab-panel" role="tabpanel">
+      <div class="panel-header">
+        <div class="panel-header-text">
+          <h2>Tabellone <em>Stazione</em></h2>
+          <p>Partenze e arrivi in tempo reale</p>
+        </div>
+        <div class="panel-deco">
+          <span class="deco-tag">LIVE BOARD</span>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <div class="input-wrapper autocomplete-wrap">
+          <i class="fa-solid fa-location-dot input-icon"></i>
+          <input type="text" id="input-stazione" placeholder="Es. Milano Centrale, Roma Termini…" autocomplete="off" />
+          <span class="input-glow"></span>
+          <ul class="autocomplete-list" id="autocomplete-stazione" role="listbox" hidden></ul>
+        </div>
+        <input type="hidden" id="hidden-stazione-id" />
+        <button class="btn-primary" id="btn-cerca-stazione">
+          <span class="btn-inner">
+            <i class="fa-solid fa-display"></i>
+            <span>Mostra</span>
+          </span>
+          <span class="btn-shimmer"></span>
+        </button>
+      </div>
+
+      <div class="toggle-group" id="toggle-dir" hidden>
+        <button class="toggle-btn active" data-dir="partenze">
+          <i class="fa-solid fa-plane-departure"></i> Partenze
+        </button>
+        <button class="toggle-btn" data-dir="arrivi">
+          <i class="fa-solid fa-plane-arrival"></i> Arrivi
+        </button>
+      </div>
+
+      <div id="result-stazione" class="result-area" aria-live="polite"></div>
+    </section>
+
+    <!-- ── TAB 3: Soluzioni viaggio ── -->
+    <section id="tab-viaggio" class="tab-panel" role="tabpanel">
+      <div class="panel-header">
+        <div class="panel-header-text">
+          <h2>Soluzioni di <em>Viaggio</em></h2>
+          <p>Pianifica il percorso migliore</p>
+        </div>
+        <div class="panel-deco">
+          <span class="deco-tag">JOURNEY PLANNER</span>
+        </div>
+      </div>
+
+      <div class="viaggio-form">
+        <div class="form-grid">
+          <!-- Partenza -->
+          <div class="form-field">
+            <label class="form-label" for="input-orig">
+              <span class="label-num">A</span>
+              <span>Partenza</span>
+            </label>
+            <div class="input-wrapper autocomplete-wrap">
+              <i class="fa-solid fa-circle-dot input-icon"></i>
+              <input type="text" id="input-orig" placeholder="Stazione di partenza…" autocomplete="off" />
+              <span class="input-glow"></span>
+              <ul class="autocomplete-list" id="autocomplete-orig" role="listbox" hidden></ul>
+            </div>
+            <input type="hidden" id="hidden-orig-id" />
+          </div>
+
+          <!-- Swap -->
+          <div class="swap-col">
+            <button class="btn-swap" id="btn-swap" title="Inverti">
+              <i class="fa-solid fa-arrows-up-down"></i>
+            </button>
+          </div>
+
+          <!-- Arrivo -->
+          <div class="form-field">
+            <label class="form-label" for="input-dest">
+              <span class="label-num">B</span>
+              <span>Arrivo</span>
+            </label>
+            <div class="input-wrapper autocomplete-wrap">
+              <i class="fa-solid fa-location-pin input-icon"></i>
+              <input type="text" id="input-dest" placeholder="Stazione di arrivo…" autocomplete="off" />
+              <span class="input-glow"></span>
+              <ul class="autocomplete-list" id="autocomplete-dest" role="listbox" hidden></ul>
+            </div>
+            <input type="hidden" id="hidden-dest-id" />
+          </div>
+
+          <!-- Data -->
+          <div class="form-field form-field-date">
+            <label class="form-label" for="input-data">
+              <span class="label-num"><i class="fa-solid fa-calendar-days"></i></span>
+              <span>Quando</span>
+            </label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar-days input-icon" style="display:none"></i>
+              <input type="datetime-local" id="input-data" />
+              <span class="input-glow"></span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-full" id="btn-cerca-viaggio">
+          <span class="btn-inner">
+            <i class="fa-solid fa-compass"></i>
+            <span>Cerca Connessioni</span>
+          </span>
+          <span class="btn-shimmer"></span>
+        </button>
+      </div>
+
+      <div id="result-viaggio" class="result-area" aria-live="polite"></div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════ FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <i class="fa-solid fa-train-subway"></i>
+        FraParid Train System
+      </div>
+      <p class="footer-note">
+        Sito realizzato per <strong>scopo scolasticoe didattico</strong>.
+      </p>
+      <p class="footer-note">
+        API utilizzate da <strong> github.com/sabas/trenitalia · ViaggiaTreno</strong>
+      </p>
+      <p class="footer-copy">© 2025 · Made with <span style="color:var(--accent)">💜</span> by Paride e Francy</p>
+    </div>
+  </footer>
+
+  <div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
+
+  <script src="script.js"></script>
+  <script>
+    // Live clock
+    function updateClock() {
+      const el = document.getElementById('live-clock');
+      if (!el) return;
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Theme toggle
+    const html = document.documentElement;
+    const toggleBtn = document.getElementById('theme-toggle');
+    const toggleIcon = document.getElementById('theme-icon');
+
+    // Auto-detect system preference
+    if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      html.setAttribute('data-theme', 'light');
+      toggleIcon.className = 'fa-solid fa-moon';
+    }
+
+    toggleBtn.addEventListener('click', () => {
+      const isLight = html.getAttribute('data-theme') === 'light';
+      html.setAttribute('data-theme', isLight ? 'dark' : 'light');
+      toggleIcon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    });
+  </script>
+</body>
+</html>
