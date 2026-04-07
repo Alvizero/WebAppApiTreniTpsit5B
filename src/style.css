@@ -1471,3 +1471,20 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   color: var(--text); /* le stazioni restano nel colore testo, solo underline */
   font-weight: 500;
 }
+
+/* Fermate passate */
+.fermata-passata {
+  opacity: 0.6;
+}
+
+/* ultima fermata fatta = colore principale (tipo numero treno) */
+.fermata-ultima {
+  opacity: 1 !important;
+  color: var(--accent); /* stesso colore numero treno */
+  font-weight: 700;
+}
+
+/* opzionale: evidenzia tutta la riga */
+.fermata-ultima td {
+  border-left: 3px solid var(--accent);
+}
