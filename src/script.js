@@ -1,7 +1,10 @@
 /**
- * script.js — TrenoTracker Frontend
+ * script.js — FraParid Train System Frontend
  *
- * Tutte le chiamate HTTP passano attraverso api.php (proxy PHP).
+ * Modifiche:
+ *  1. Cambio tab → pulisce input e risultati del tab precedente
+ *  2. Numero treno cliccabile → apre la tratta in Tab 1
+ *  3. Nome stazione cliccabile → apre il tabellone in Tab 2
  */
 
 'use strict';
@@ -73,10 +76,55 @@ function msgBox(tipo, icon, testo) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NAVIGAZIONE TAB
+// NAVIGAZIONE TAB — con reset al cambio tab
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Pulisce input e risultati di un tab.
+ * Ogni tab ha i propri campi da resettare.
+ */
+function resetTab(tabId) {
+  switch (tabId) {
+    case 'treno':
+      document.getElementById('input-numero-treno').value = '';
+      document.getElementById('result-treno').innerHTML   = '';
+      break;
+
+    case 'stazione':
+      document.getElementById('input-stazione').value       = '';
+      document.getElementById('hidden-stazione-id').value   = '';
+      document.getElementById('result-stazione').innerHTML  = '';
+      document.getElementById('toggle-dir').hidden          = true;
+      // Ripristina toggle sul default "partenze"
+      direzioneCorrente = 'partenze';
+      document.querySelectorAll('.toggle-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.dir === 'partenze');
+      });
+      stazioneCorrente = null;
+      break;
+
+    case 'viaggio':
+      document.getElementById('input-orig').value      = '';
+      document.getElementById('hidden-orig-id').value  = '';
+      document.getElementById('input-dest').value      = '';
+      document.getElementById('hidden-dest-id').value  = '';
+      document.getElementById('result-viaggio').innerHTML = '';
+      // Riporta la data/ora al prossimo quarto d'ora
+      setDefaultDatetime();
+      break;
+  }
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    const targetTab = btn.dataset.tab;
+
+    // Resetta il tab che si sta lasciando
+    const activeBtn = document.querySelector('.tab-btn.active');
+    if (activeBtn && activeBtn !== btn) {
+      resetTab(activeBtn.dataset.tab);
+    }
+
     document.querySelectorAll('.tab-btn').forEach(b => {
       b.classList.remove('active');
       b.setAttribute('aria-selected', 'false');
@@ -84,13 +132,56 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     btn.setAttribute('aria-selected', 'true');
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    document.getElementById('tab-' + targetTab).classList.add('active');
   });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// NAVIGAZIONE PROGRAMMATIVA (usata dai link cliccabili)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Apre il tab indicato resettando prima quello corrente.
+ * @param {string} tabId  — 'treno' | 'stazione' | 'viaggio'
+ */
+function navigaTab(tabId) {
+  const activeBtn = document.querySelector('.tab-btn.active');
+  if (activeBtn) resetTab(activeBtn.dataset.tab);
+
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const isTarget = b.dataset.tab === tabId;
+    b.classList.toggle('active', isTarget);
+    b.setAttribute('aria-selected', String(isTarget));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+/**
+ * Apre Tab 1 e traccia il numero di treno indicato.
+ * @param {string|number} numero
+ */
+async function apriTreno(numero) {
+  navigaTab('treno');
+  document.getElementById('input-numero-treno').value = numero;
+  await cercaTreno();
+}
+
+/**
+ * Apre Tab 2 e carica il tabellone della stazione indicata.
+ * @param {string} id    — codice stazione (es. "S01700")
+ * @param {string} nome  — nome leggibile
+ */
+async function apriStazione(id, nome) {
+  navigaTab('stazione');
+  document.getElementById('input-stazione').value     = nome;
+  document.getElementById('hidden-stazione-id').value = id;
+  stazioneCorrente = { id, nome };
+  await caricaTabellone(id, nome, direzioneCorrente);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // AUTOCOMPLETAMENTO STAZIONI
-// Mostra risultati già dalla prima lettera, debounce 200ms
 // ═══════════════════════════════════════════════════════════════════════════════
 function initAutocomplete(inputId, listId, hiddenId, onSelect) {
   const input  = document.getElementById(inputId);
@@ -99,11 +190,9 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
   let   timer  = null;
 
   input.addEventListener('input', () => {
-    hidden.value = ''; // reset ID quando l'utente ridigita
+    hidden.value = '';
     clearTimeout(timer);
     const q = input.value.trim();
-
-    // Mostra risultati già da 1 carattere
     if (q.length < 1) { closeList(); return; }
 
     timer = setTimeout(async () => {
@@ -113,15 +202,13 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
       } catch {
         closeList();
       }
-    }, 200); // 200ms di debounce: veloce ma senza spammare l'API
+    }, 200);
   });
 
-  // Chiudi cliccando fuori
   document.addEventListener('click', e => {
     if (!input.contains(e.target) && !list.contains(e.target)) closeList();
   });
 
-  // Navigazione tastiera
   input.addEventListener('keydown', e => {
     const items   = [...list.querySelectorAll('li')];
     const current = list.querySelector('[aria-selected="true"]');
@@ -151,14 +238,14 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
     list.innerHTML = '';
     if (!results || !results.length) { closeList(); return; }
 
-    results.slice(0, 12).forEach(item => { // max 12 suggerimenti
+    results.slice(0, 12).forEach(item => {
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.innerHTML = `
         <i class="fa-regular fa-building"></i>
         <span>${item.nome}</span>
         <span class="station-id">${item.id}</span>`;
-      li.addEventListener('mousedown', e => e.preventDefault()); // evita blur prima del click
+      li.addEventListener('mousedown', e => e.preventDefault());
       li.addEventListener('click', () => {
         input.value  = item.nome;
         hidden.value = item.id;
@@ -176,7 +263,6 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
   }
 }
 
-// Inizializza autocomplete per i tre campi stazione
 initAutocomplete('input-stazione', 'autocomplete-stazione', 'hidden-stazione-id');
 initAutocomplete('input-orig',     'autocomplete-orig',     'hidden-orig-id');
 initAutocomplete('input-dest',     'autocomplete-dest',     'hidden-dest-id');
@@ -197,13 +283,11 @@ async function cercaTreno() {
   el.innerHTML = loaderHTML('Ricerca treno in corso…');
 
   try {
-    // Passo 1: risolvi numero → stazione partenza + timestamp
     const meta = await apiFetch({ action: 'cerca_treno', numero: num });
     if (!meta.codStazione) throw new Error('Stazione di partenza non trovata');
 
     el.innerHTML = loaderHTML('Caricamento andamento in tempo reale…');
 
-    // Passo 2: andamento dettagliato
     const andamento = await apiFetch({
       action:   'andamento_treno',
       stazione: meta.codStazione,
@@ -229,6 +313,8 @@ function renderAndamento(d, meta) {
   const categoria  = d.categoria   ?? '';
   const origine    = d.origine     ?? '—';
   const dest       = d.destinazione ?? '—';
+  // Codice stazione origine per il link cliccabile
+  const codOrigine = meta.codStazione ?? '';
 
   let ultimoRil = '—';
   if (d.stazioneUltimoRilevamento && d.stazioneUltimoRilevamento !== 'undefined') {
@@ -244,13 +330,18 @@ function renderAndamento(d, meta) {
     badgeHTML = ritardoBadge(ritardoMin);
   }
 
+  // Il nome stazione origine è cliccabile → apre tabellone
+  const origineHTML = codOrigine
+    ? `<span class="treno-rotta" data-id="${codOrigine}" data-nome="${origine}" title="Apri tabellone ${origine}">${origine}</span>`
+    : origine;
+
   return `
     <div class="treno-card">
       <div class="treno-card-header">
         <div class="treno-numero">${numero}</div>
         <div class="treno-info">
-          <div class="treno-nome">${categoria} · ${origine} → ${dest}</div>
-          <div class="treno-percorso">${meta.label ?? ''}</div>
+          <div class="treno-rotta">${categoria} · ${origineHTML} → ${dest}</div>
+          <div class="treno-categoria">${meta.label ?? ''}</div>
         </div>
         ${badgeHTML}
       </div>
@@ -273,9 +364,16 @@ function renderAndamento(d, meta) {
     </div>`;
 }
 
+/**
+ * Rende la tabella delle fermate.
+ * Il nome di ogni stazione è cliccabile → apre Tab 2 con quel tabellone.
+ * Nota: le fermate dell'API non hanno sempre il codice stazione, quindi
+ * lo cerchiamo tramite autocompletamento se non disponibile.
+ */
 function renderFermate(fermate) {
   const rows = fermate.map(f => {
     const nome     = f.stazione ?? '—';
+    const codSt    = f.id ?? '';          // Viaggiatreno restituisce "id" per alcune fermate
     const progPart = f.programmataPartenza ?? f.programmataArrivo ?? null;
     const effPart  = f.effettivaPartenza   ?? f.effettivaArrivo   ?? null;
     const ritMin   = calcRitardoMin(progPart, effPart);
@@ -288,10 +386,17 @@ function renderFermate(fermate) {
       ? `<span class="orario-effettivo ${orarioClass(ritMin)}">${fmtTime(effPart)}</span>`
       : '<span class="orario-effettivo">—</span>';
     const binHTML  = binario !== '—'
-      ? `<span class="binario-chip">${binario}</span>${binEff && binEff !== binario ? ` <span class="binario-chip" style="color:var(--signal)">${binEff}</span>` : ''}`
+      ? `<span class="binario-chip">${binario}</span>${binEff && binEff !== binario ? ` <span class="binario-chip" style="color:var(--accent)">${binEff}</span>` : ''}`
       : '—';
+
+    // Nome stazione cliccabile: se abbiamo il codice lo usiamo direttamente,
+    // altrimenti facciamo lookup via autocomplete al click
+    const nomeHTML = nome !== '—'
+      ? `<span class="link-stazione" data-id="${codSt}" data-nome="${nome}" title="Apri tabellone ${nome}">${dotHTML}${nome}</span>`
+      : `${dotHTML}${nome}`;
+
     return `<tr class="${rowClass}">
-      <td class="fermata-nome">${dotHTML}${nome}</td>
+      <td class="fermata-nome">${nomeHTML}</td>
       <td class="orario-programmato">${fmtTime(progPart)}</td>
       <td>${effHTML}</td>
       <td>${binHTML}</td>
@@ -320,7 +425,6 @@ document.getElementById('btn-cerca-stazione').addEventListener('click', () => {
   caricaTabellone(id, nome, direzioneCorrente);
 });
 
-// Premi Invio nel campo stazione se c'è già un ID selezionato
 document.getElementById('input-stazione').addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     const id   = document.getElementById('hidden-stazione-id').value;
@@ -345,8 +449,6 @@ async function caricaTabellone(id, nome, dir) {
   toggleEl.hidden = false;
 
   try {
-    // Endpoint: /partenze/{id}/{orario}  oppure  /arrivi/{id}/{orario}
-    // L'orario viene generato server-side in formatOrarioAPI()
     const data = await apiFetch({ action: dir === 'partenze' ? 'partenze' : 'arrivi', stazione: id });
     el.innerHTML = renderTabellone(data, nome, dir);
   } catch (e) {
@@ -355,12 +457,11 @@ async function caricaTabellone(id, nome, dir) {
 }
 
 function renderTabellone(trains, nomeStazione, dir) {
-  // L'API può restituire null, array vuoto o stringa vuota
   if (!Array.isArray(trains) || !trains.length) {
     return `
       <div class="tabellone-header">
         <span class="tabellone-stazione-nome">
-          <i class="fa-solid fa-location-dot" style="color:var(--signal)"></i> ${nomeStazione}
+          <i class="fa-solid fa-location-dot" style="color:var(--accent)"></i> ${nomeStazione}
         </span>
       </div>
       ${msgBox('empty', 'inbox', `Nessun treno in ${dir === 'partenze' ? 'partenza' : 'arrivo'} al momento.`)}`;
@@ -371,18 +472,29 @@ function renderTabellone(trains, nomeStazione, dir) {
   const orLabel    = isPartenze ? 'Partenza'     : 'Arrivo';
 
   const rows = trains.map(t => {
-    const numero  = t.numeroTreno ?? '—';
-    const categ   = t.categoria   ?? '';
-    const dest    = isPartenze ? (t.destinazione ?? '—') : (t.origine ?? '—');
-    const orario  = isPartenze ? t.orarioPartenza : t.orarioArrivo;
-    const ritardo = t.ritardo ?? null; // minuti, già calcolati dall'API
-    const binProg = t.binarioProgrammatoPartenzaDescrizione
-                 ?? t.binarioProgrammatoArrivoDescrizione ?? '';
-    const binEff  = t.binarioEffettivoPartenzaDescrizione
-                 ?? t.binarioEffettivoArrivoDescrizione  ?? '';
+    const numero    = t.numeroTreno ?? '—';
+    const categ     = t.categoria   ?? '';
+    const dest      = isPartenze ? (t.destinazione ?? '—') : (t.origine ?? '—');
+    const orario    = isPartenze ? t.orarioPartenza : t.orarioArrivo;
+    const ritardo   = t.ritardo ?? null;
+    // Codice stazione destinazione/provenienza (non sempre disponibile nell'API)
+    const codDest   = isPartenze ? (t.codiceDestinazione ?? '') : (t.codiceOrigine ?? '');
+    const binProg   = t.binarioProgrammatoPartenzaDescrizione
+                   ?? t.binarioProgrammatoArrivoDescrizione ?? '';
+    const binEff    = t.binarioEffettivoPartenzaDescrizione
+                   ?? t.binarioEffettivoArrivoDescrizione  ?? '';
 
-    // Colore ritardo
-    let ritardoHTML = '<span style="color:var(--mist)">—</span>';
+    // Numero treno → link cliccabile verso Tab 1
+    const numeroHTML = numero !== '—'
+      ? `<span class="link-treno" data-numero="${numero}" title="Traccia treno ${numero}">${numero}</span>`
+      : '—';
+
+    // Destinazione/Provenienza → link cliccabile verso Tab 2
+    const destHTML = dest !== '—'
+      ? `<span class="link-stazione" data-id="${codDest}" data-nome="${dest}" title="Apri tabellone ${dest}">${dest}</span>`
+      : '—';
+
+    let ritardoHTML = '<span style="color:var(--text-muted)">—</span>';
     if (ritardo !== null) {
       if (ritardo <= 0)
         ritardoHTML = `<span style="color:var(--go);font-weight:600">✓</span>`;
@@ -392,23 +504,22 @@ function renderTabellone(trains, nomeStazione, dir) {
         ritardoHTML = `<span style="color:var(--danger);font-family:var(--font-mono);font-size:.82rem">+${ritardo}'</span>`;
     }
 
-    // Binario: se effettivo diverso da programmato lo evidenzia in giallo
     let binHTML = '—';
     if (binProg || binEff) {
       const bP = binProg || '?';
       const bE = binEff  || '';
       if (bE && bE !== bP) {
         binHTML = `<span class="binario-chip" style="text-decoration:line-through;opacity:.5">${bP}</span>
-                   <span class="binario-chip" style="color:var(--signal)">${bE}</span>`;
+                   <span class="binario-chip" style="color:var(--accent)">${bE}</span>`;
       } else {
         binHTML = `<span class="binario-chip">${bP}</span>`;
       }
     }
 
     return `<tr>
-      <td style="font-family:var(--font-mono);color:var(--signal);font-weight:500">${numero}</td>
-      <td style="font-size:.78rem;color:var(--mist)">${categ}</td>
-      <td style="font-weight:500">${dest}</td>
+      <td style="font-family:var(--font-mono);color:var(--accent);font-weight:500">${numeroHTML}</td>
+      <td style="font-size:.78rem;color:var(--text-muted)">${categ}</td>
+      <td style="font-weight:500">${destHTML}</td>
       <td style="font-family:var(--font-mono)">${fmtTime(orario)}</td>
       <td>${binHTML}</td>
       <td>${ritardoHTML}</td>
@@ -418,9 +529,9 @@ function renderTabellone(trains, nomeStazione, dir) {
   return `
     <div class="tabellone-header">
       <span class="tabellone-stazione-nome">
-        <i class="fa-solid fa-location-dot" style="color:var(--signal)"></i> ${nomeStazione}
+        <i class="fa-solid fa-location-dot" style="color:var(--accent)"></i> ${nomeStazione}
       </span>
-      <span style="font-size:.8rem;color:var(--mist)">${trains.length} treni · aggiornato adesso</span>
+      <span style="font-size:.8rem;color:var(--text-muted)">${trains.length} treni · aggiornato adesso</span>
     </div>
     <table class="tabellone-table">
       <thead>
@@ -433,18 +544,60 @@ function renderTabellone(trains, nomeStazione, dir) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// GESTORE DELEGATO PER LINK CLICCABILI
+// Cattura i click su .link-treno e .link-stazione ovunque nel DOM
+// ═══════════════════════════════════════════════════════════════════════════════
+document.addEventListener('click', async e => {
+  // ── Click su numero treno ──────────────────────────────────────────────────
+  const trenoEl = e.target.closest('.link-treno');
+  if (trenoEl) {
+    const numero = trenoEl.dataset.numero;
+    if (numero) await apriTreno(numero);
+    return;
+  }
+
+  // ── Click su nome stazione ─────────────────────────────────────────────────
+  const stazioneEl = e.target.closest('.link-stazione');
+  if (stazioneEl) {
+    let id   = stazioneEl.dataset.id;
+    const nome = stazioneEl.dataset.nome;
+    if (!nome || nome === '—') return;
+
+    // Se non abbiamo il codice stazione, lo cerchiamo via autocomplete
+    if (!id) {
+      try {
+        const results = await apiFetch({ action: 'autocompleta_stazione', q: nome });
+        const match   = results?.find(r =>
+          r.nome.toUpperCase() === nome.toUpperCase()
+        ) ?? results?.[0];
+        if (match) id = match.id;
+      } catch {
+        showToast(`Impossibile trovare la stazione "${nome}".`);
+        return;
+      }
+    }
+
+    if (id) await apriStazione(id, nome);
+    else showToast(`Stazione "${nome}" non trovata.`);
+    return;
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TAB 3 — SOLUZIONI DI VIAGGIO
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Imposta datetime-local al prossimo quarto d'ora arrotondato
-(function setDefaultDatetime() {
+function setDefaultDatetime() {
   const now = new Date();
   now.setSeconds(0, 0);
   now.setMinutes(Math.ceil(now.getMinutes() / 5) * 5);
-  // Formato "YYYY-MM-DDTHH:MM" richiesto dall'input datetime-local
   const iso = now.toISOString().slice(0, 16);
-  document.getElementById('input-data').value = iso;
-})();
+  const el  = document.getElementById('input-data');
+  if (el) el.value = iso;
+}
+
+// Imposta datetime-local al prossimo quarto d'ora arrotondato
+setDefaultDatetime();
 
 // Swap Partenza ↔ Arrivo
 document.getElementById('btn-swap').addEventListener('click', () => {
@@ -469,12 +622,9 @@ async function cercaViaggio() {
   const el = document.getElementById('result-viaggio');
   el.innerHTML = loaderHTML('Ricerca soluzioni di viaggio…');
 
-  // Formato ISO richiesto dall'API: "2026-03-30T14:30:00"
-  // L'input datetime-local restituisce "2026-03-30T14:30" (senza secondi)
   const dataISO = dataVal ? (dataVal.length === 16 ? dataVal + ':00' : dataVal) : new Date().toISOString().slice(0, 19);
 
   try {
-    // Endpoint: /soluzioniViaggioNew/{origId}/{destId}/{dataISO}
     const resp = await apiFetch({ action: 'soluzioni_viaggio', orig: origId, dest: destId, data: dataISO });
     el.innerHTML = renderSoluzioni(resp, origNome, destNome);
   } catch (e) {
@@ -496,17 +646,27 @@ function renderSoluzioni(data, origNome, destNome) {
     const cambi    = Math.max(0, (sol.vehicles?.length ?? 1) - 1);
     const cambiCls = cambi === 0 ? 'zero-cambi' : '';
 
-    const legs = (sol.vehicles ?? []).map(v => `
-      <div class="leg-item">
-        <i class="fa-solid fa-train"></i>
-        <span class="leg-treno">${v.numeroTreno ?? '—'}</span>
-        <span>${v.origine ?? '—'}</span>
-        <i class="fa-solid fa-arrow-right" style="color:var(--mist);font-size:.7rem"></i>
-        <span>${v.destinazione ?? '—'}</span>
-        <span style="margin-left:auto;font-family:var(--font-mono);font-size:.8rem;color:var(--mist)">
-          ${fmtTime(v.orarioPartenza)} – ${fmtTime(v.orarioArrivo)}
-        </span>
-      </div>`).join('');
+    const legs = (sol.vehicles ?? []).map(v => {
+      const numTreno  = v.numeroTreno ?? '—';
+      const origLeg   = v.origine     ?? '—';
+      const destLeg   = v.destinazione ?? '—';
+      // Numero treno nella leg → cliccabile
+      const numHTML = numTreno !== '—'
+        ? `<span class="link-treno leg-treno" data-numero="${numTreno}" title="Traccia treno ${numTreno}">${numTreno}</span>`
+        : '<span class="leg-treno">—</span>';
+
+      return `
+        <div class="leg-item">
+          <i class="fa-solid fa-train"></i>
+          ${numHTML}
+          <span>${origLeg}</span>
+          <i class="fa-solid fa-arrow-right" style="color:var(--text-muted);font-size:.7rem"></i>
+          <span>${destLeg}</span>
+          <span style="margin-left:auto;font-family:var(--font-mono);font-size:.8rem;color:var(--text-muted)">
+            ${fmtTime(v.orarioPartenza)} – ${fmtTime(v.orarioArrivo)}
+          </span>
+        </div>`;
+    }).join('');
 
     return `
       <div class="soluzione-card">
@@ -529,9 +689,9 @@ function renderSoluzioni(data, origNome, destNome) {
   return `
     <div style="margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
       <span style="font-family:var(--font-display);font-size:1.2rem;color:var(--white)">${origNome}</span>
-      <i class="fa-solid fa-arrow-right" style="color:var(--signal)"></i>
+      <i class="fa-solid fa-arrow-right" style="color:var(--accent)"></i>
       <span style="font-family:var(--font-display);font-size:1.2rem;color:var(--white)">${destNome}</span>
-      <span style="color:var(--mist);font-size:.85rem">(${soluzioni.length} soluzioni)</span>
+      <span style="color:var(--text-muted);font-size:.85rem">(${soluzioni.length} soluzioni)</span>
     </div>
     ${cards}`;
 }
