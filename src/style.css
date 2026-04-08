@@ -215,9 +215,36 @@ body {
 }
 
 .logo-lockup {
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.logo-lockup:hover {
+  transform: translateY(-2px);
+}
+
+/* Shimmer sul logo — stesso effetto di .btn-shimmer */
+.logo-lockup {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  transition: transform var(--t-smooth), box-shadow var(--t-smooth);
+}
+
+.logo-lockup::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.25) 50%, transparent 80%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+
+.logo-lockup:hover::after {
+  transform: translateX(100%);
 }
 
 .logo-badge {
@@ -1023,7 +1050,8 @@ tr:last-child .col-progresso .linea-percorso  { bottom: 50%; }
   background: var(--accent);
   border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(245,197,24,0.25);
-  transform: scale(1.25);
+  transform: scale(1.25) rotate(45deg);
+  border-radius: 2px;
   animation: pulse-dot 1.8s ease-in-out infinite;
 }
 
@@ -1234,9 +1262,6 @@ tr:last-child .col-progresso .linea-percorso  { bottom: 50%; }
 .link-treno,
 .link-stazione {
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 3px;
   transition: opacity var(--t-fast);
 }
 
@@ -1373,4 +1398,201 @@ tr:last-child .col-progresso .linea-percorso  { bottom: 50%; }
   .tab-btn     { min-width: 100px; gap: 0.4rem; font-size: 0.72rem; padding: 0.9rem 0.75rem; }
   .tab-label   { display: none; }
   .tab-btn .fa-solid { font-size: 1rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMAZIONI AGGIUNTIVE — FraParid Train System
+   Tutto ciò che segue è puro strato animazione, non tocca colori,
+   font, spacing o struttura del CSS originale.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. HEADER: entrata dall'alto ─────────────────────────────────────── */
+.site-header {
+  animation: header-drop 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes header-drop {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 2. NAV: entrata dopo l'header ────────────────────────────────────── */
+.tab-nav {
+  animation: header-drop 0.5s 0.1s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ── 3. LOGO BADGE: leggero bounce all'entrata ─────────────────────────── */
+.logo-badge {
+  animation: badge-pulse 3s ease-in-out infinite,
+             logo-bounce 0.6s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes logo-bounce {
+  from { opacity: 0; transform: scale(0.6) rotate(-10deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ── 4. TAB ICON: spostamento verticale al hover ──────────────────────── */
+.tab-btn .fa-solid {
+  transition: transform var(--t-spring);
+}
+.tab-btn:hover .fa-solid {
+  transform: translateY(-3px) scale(1.15);
+}
+.tab-btn.active .fa-solid {
+  transform: translateY(-2px);
+}
+
+/* ── 5. BUTTON: icona interna che scivola a destra al hover ───────────── */
+.btn-primary .btn-inner .fa-solid,
+.btn-primary .btn-inner i {
+  transition: transform var(--t-spring);
+}
+.btn-primary:hover .btn-inner .fa-solid,
+.btn-primary:hover .btn-inner i {
+  transform: translateX(4px);
+}
+
+/* Click feedback: micro-pressione */
+.btn-primary:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* ── 6. INPUT ICON: scala al focus ────────────────────────────────────── */
+.input-wrapper:focus-within .input-icon {
+  color: var(--accent);
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* ── 7. AUTOCOMPLETE: dropdown che appare con fade+slide ─────────────── */
+.autocomplete-list {
+  animation: dropdown-in 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  transform-origin: top center;
+}
+@keyframes dropdown-in {
+  from { opacity: 0; transform: scaleY(0.9) translateY(-6px); }
+  to   { opacity: 1; transform: scaleY(1)   translateY(0); }
+}
+
+/* Voci autocomplete: scorrono verso destra al hover */
+.autocomplete-list li {
+  transition: background var(--t-fast), color var(--t-fast),
+              padding-left var(--t-fast);
+}
+.autocomplete-list li:hover,
+.autocomplete-list li[aria-selected="true"] {
+  padding-left: 1.25rem;
+}
+
+/* ── 8. TRENO CARD: entrata con leggero rimbalzo + hover lift ─────────── */
+.treno-card {
+  animation: card-enter 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+  transition: border-color var(--t-smooth),
+              transform var(--t-smooth),
+              box-shadow var(--t-smooth);
+}
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.treno-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── 9. SOLUZIONE CARD: stagger entrata + hover lift ──────────────────── */
+.soluzione-card {
+  animation: card-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.soluzione-card:nth-child(1) { animation-delay: 0.05s; }
+.soluzione-card:nth-child(2) { animation-delay: 0.10s; }
+.soluzione-card:nth-child(3) { animation-delay: 0.15s; }
+.soluzione-card:nth-child(4) { animation-delay: 0.20s; }
+.soluzione-card:nth-child(5) { animation-delay: 0.25s; }
+
+/* ── 10. TABELLONE RIGHE: entrata staggered da sinistra ──────────────── */
+.tabellone-table tbody tr {
+  animation: row-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes row-slide-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.tabellone-table tbody tr:nth-child(1)  { animation-delay: 0.03s; }
+.tabellone-table tbody tr:nth-child(2)  { animation-delay: 0.06s; }
+.tabellone-table tbody tr:nth-child(3)  { animation-delay: 0.09s; }
+.tabellone-table tbody tr:nth-child(4)  { animation-delay: 0.12s; }
+.tabellone-table tbody tr:nth-child(5)  { animation-delay: 0.15s; }
+.tabellone-table tbody tr:nth-child(6)  { animation-delay: 0.18s; }
+.tabellone-table tbody tr:nth-child(7)  { animation-delay: 0.21s; }
+.tabellone-table tbody tr:nth-child(8)  { animation-delay: 0.24s; }
+.tabellone-table tbody tr:nth-child(9)  { animation-delay: 0.27s; }
+.tabellone-table tbody tr:nth-child(10) { animation-delay: 0.30s; }
+
+/* ── 11. FERMATE RIGHE: stesso stagger per le fermate del treno ─────── */
+.fermate-table tbody tr {
+  animation: row-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.fermate-table tbody tr:nth-child(1)  { animation-delay: 0.04s; }
+.fermate-table tbody tr:nth-child(2)  { animation-delay: 0.07s; }
+.fermate-table tbody tr:nth-child(3)  { animation-delay: 0.10s; }
+.fermate-table tbody tr:nth-child(4)  { animation-delay: 0.13s; }
+.fermate-table tbody tr:nth-child(5)  { animation-delay: 0.16s; }
+.fermate-table tbody tr:nth-child(6)  { animation-delay: 0.19s; }
+.fermate-table tbody tr:nth-child(7)  { animation-delay: 0.22s; }
+.fermate-table tbody tr:nth-child(8)  { animation-delay: 0.25s; }
+.fermate-table tbody tr:nth-child(9)  { animation-delay: 0.28s; }
+.fermate-table tbody tr:nth-child(10) { animation-delay: 0.31s; }
+
+/* ── 12. THEME TOGGLE: rotazione extra al click ───────────────────────── */
+.theme-toggle:active {
+  transform: rotate(40deg) scale(0.95);
+}
+
+/* ── 13. DECO-TAG: leggero pulse al hover ─────────────────────────────── */
+.deco-tag {
+  transition: transform var(--t-spring), background var(--t-fast),
+              color var(--t-fast), box-shadow var(--t-fast);
+}
+.deco-tag:hover {
+  transform: scale(1.05);
+  background: var(--accent-subtle);
+}
+
+/* ── 14. LEG-ITEM: lieve indent al hover ─────────────────────────────── */
+.leg-item {
+  transition: padding-left var(--t-fast);
+}
+.leg-item:hover {
+  padding-left: 6px;
+}
+
+/* ── 15. MSG-BOX: shake per errori ───────────────────────────────────── */
+.msg-error {
+  animation: panel-enter 0.3s ease, shake 0.4s 0.3s ease both;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(3px); }
+}
+
+/* ── 16. CLOCK: transizione di colore al cambio secondo ──────────────── */
+.header-clock {
+  transition: color var(--t-fast), text-shadow var(--t-smooth);
+}
+
+/* ── 17. SCROLL SELECTION COLOR ──────────────────────────────────────── */
+::selection {
+  background: var(--accent);
+  color: #000;
+}
+
+/* ── 18. REDUCED MOTION: rispetta preferenze accessibilità ───────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
