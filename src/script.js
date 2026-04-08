@@ -51,7 +51,7 @@ function ritardoBadge(min) {
   if (min === null || min === undefined)
     return '<span class="badge-ritardo badge-soppresso">N/D</span>';
   if (min <= 0)
-    return `<span class="badge-ritardo badge-puntuale"><i class="fa-solid fa-check"></i> In orario</span>`;
+    return '<span class="badge-ritardo badge-puntuale"><i class="fa-solid fa-check"></i> In orario</span>';
   if (min <= 5)
     return `<span class="badge-ritardo badge-lieve">+${min} min</span>`;
   return `<span class="badge-ritardo badge-ritardo-g">+${min} min</span>`;
@@ -385,79 +385,52 @@ function renderAndamento(d, meta) {
  */
 
 function renderFermate(fermate) {
+  // Identifichiamo l'ultima stazione passata per la logica della barra
+  const lastPassataIndex = fermate
+    .map((f, i) => (f.actualFermataType && f.actualFermataType !== 0 ? i : -1))
+    .filter(i => i !== -1)
+    .pop();
+
   const rows = fermate.map((f, index) => {
     const nome = f.stazione ?? '—';
     const codSt = f.id ?? '';
 
-    const progPart =
-      f.programmataPartenza ??
-      f.programmataArrivo ??
-      f.programmata ??
-      f.orarioArrivo ??
-      f.orarioPartenza ??
-      null;
-
-    const effPart =
-      f.effettivaPartenza ??
-      f.effettivaArrivo ??
-      f.effettiva ??
-      null;
-
+    const progPart = f.programmataPartenza ?? f.programmataArrivo ?? f.programmata ?? f.orarioArrivo ?? f.orarioPartenza ?? null;
+    const effPart = f.effettivaPartenza ?? f.effettivaArrivo ?? f.effettiva ?? null;
     const ritMin = calcRitardoMin(progPart, effPart);
-
-    const binario =
-      f.binarioProgrammatoPartenzaDescrizione ??
-      f.binarioProgrammatoArrivoDescrizione ??
-      '—';
-
-    const binEff =
-      f.binarioEffettivoPartenzaDescrizione ??
-      f.binarioEffettivoArrivoDescrizione ??
-      '';
-
+    const binario = f.binarioProgrammatoPartenzaDescrizione ?? f.binarioProgrammatoArrivoDescrizione ?? '—';
+    const binEff = f.binarioEffettivoPartenzaDescrizione ?? f.binarioEffettivoArrivoDescrizione ?? '';
     const tipo = f.actualFermataType ?? 0;
 
-    const lastPassataIndex = fermate
-      .map((f, i) => (f.actualFermataType && f.actualFermataType !== 0 ? i : -1))
-      .filter(i => i !== -1)
-      .pop();
+    let rowClass = (tipo === 0) ? 'fermata-futura' : 'fermata-passata';
+    if (index === lastPassataIndex) rowClass += ' fermata-ultima';
 
-    let stato = '';
-    let rowClass = '';
-
-    // tutto ciò che NON è futuro → passata (quindi anche "in corso")
-    if (tipo === 0) {
-      rowClass = 'fermata-futura';
-    } else {
-      rowClass = 'fermata-passata';
-    }
-
-    if (index === lastPassataIndex) {
-      rowClass += ' fermata-ultima';
-    }
+    // Logica per la barra di progresso a sinistra
+    const isPassata = tipo !== 0;
+    const isUltima = index === lastPassataIndex;
 
     const effHTML = effPart
       ? `<span class="orario-effettivo ${orarioClass(ritMin)}">${fmtTime(effPart)}</span>`
       : '<span class="orario-effettivo">—</span>';
 
-    const binHTML =
-      binario !== '—'
-        ? `<span class="binario-chip">${binario}</span>${binEff && binEff !== binario
-          ? ` <span class="binario-chip binario-eff">${binEff}</span>`
-          : ''
-        }`
+    const binHTML = binario !== '—'
+        ? `<span class="binario-chip">${binario}</span>${binEff && binEff !== binario ? ` <span class="binario-chip binario-eff">${binEff}</span>` : ''}`
         : '—';
 
-    const nomeHTML =
-      nome !== '—'
+    const nomeHTML = nome !== '—'
         ? `<span class="link-stazione" data-id="${codSt}" data-nome="${nome}">
-            ${tipo === 1 ? '<span class="fermata-corrente-dot"></span>' : ''}
             ${nome}
           </span>`
         : nome;
 
     return `
       <tr class="${rowClass}">
+        <td class="col-progresso">
+          <div class="col-progresso-inner">
+            <div class="linea-percorso ${isPassata ? 'fatto' : ''}"></div>
+            <div class="punto-percorso ${isPassata ? 'fatto' : ''} ${isUltima ? 'attuale' : ''}"></div>
+          </div>
+        </td>
         <td class="fermata-nome">${nomeHTML}</td>
         <td class="orario-programmato">${fmtTime(progPart)}</td>
         <td>${effHTML}</td>
@@ -471,8 +444,16 @@ function renderFermate(fermate) {
       <i class="fa-solid fa-list-ul"></i> Fermate (${fermate.length})
     </div>
     <table class="fermate-table">
+      <colgroup>
+        <col style="width:44px">
+        <col>
+        <col style="width:90px">
+        <col style="width:90px">
+        <col style="width:80px">
+      </colgroup>
       <thead>
         <tr>
+          <th></th>
           <th>Stazione</th>
           <th>Previsto</th>
           <th>Effettivo</th>
@@ -483,7 +464,6 @@ function renderFermate(fermate) {
     </table>
   `;
 }
-
 // ═══════════════════════════════════════════════════════════════════════════════
 // TAB 2 — TABELLONE STAZIONE
 // ═══════════════════════════════════════════════════════════════════════════════

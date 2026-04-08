@@ -1,13 +1,7 @@
 <?php
-/**
- * api.php — Proxy backend per l'API non ufficiale di Viaggiatreno / Trenitalia
- *
- * Endpoint base: http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/
- */
 
 declare(strict_types=1);
 
-// ─── CORS & Headers ──────────────────────────────────────────────────────────
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -26,21 +20,19 @@ $action = $_GET['action'] ?? '';
 try {
     switch ($action) {
 
-        // ── 1. Autocompletamento stazione ────────────────────────────────────
-        // Endpoint: /autocompletaStazione/{stringa}
-        // Risposta testuale: "NOME STAZIONE|S01700\nNOME2|S01800"
+        // 1. Autocompletamento stazione
         case 'autocompleta_stazione':
-            $query = sanitize($_GET['q'] ?? '');
+            $query = inpututente($_GET['q'] ?? '');
             // Accettiamo anche 1 solo carattere per mostrare risultati subito
             if (strlen($query) < 1) throw new Exception('Query troppo corta', 400);
-            $url = VIAGGIATRENO_BASE . '/autocompletaStazione/' . rawurlencode($query);
+            $url = VIAGGIATRENO_BASE . '/autocompletaStazione/' . rawurlencode($query); // endpoint
             $raw = fetchUrl($url, false);
             $lines   = array_filter(explode("\n", trim($raw)));
             $results = [];
             foreach ($lines as $line) {
                 $parts = explode('|', trim($line));
                 if (count($parts) >= 2) {
-                    $results[] = [
+                    $results[] = [ // risposta
                         'nome' => trim($parts[0]),
                         'id'   => trim($parts[1]),
                     ];
@@ -49,22 +41,18 @@ try {
             echo json_encode(['success' => true, 'data' => $results]);
             break;
 
-        // ── 2. Cerca numero treno → stazione di partenza ─────────────────────
-        // Endpoint: /cercaNumeroTrenoTrenoAutocomplete/{codTreno}
-        // Risposta: "666 - LA SPEZIA CENTRALE|666-S06000-1234567890000"
+        // 2. Cerca numero treno
         case 'cerca_treno':
-            $num = sanitize($_GET['numero'] ?? '');
+            $num = inpututente($_GET['numero'] ?? '');
             if (!is_numeric($num)) throw new Exception('Numero treno non valido', 400);
-            $url  = VIAGGIATRENO_BASE . '/cercaNumeroTrenoTrenoAutocomplete/' . $num;
+            $url  = VIAGGIATRENO_BASE . '/cercaNumeroTrenoTrenoAutocomplete/' . $num; // endpoint
             $raw  = fetchUrl($url, false);
             $line = trim(explode("\n", $raw)[0] ?? '');
             if (!$line) throw new Exception('Treno non trovato', 404);
             $parts = explode('|', $line);
             if (count($parts) < 2) throw new Exception('Treno non trovato', 404);
-            // La parte destra è "codTreno-codStazione-timestampMs"
-            // Il codice stazione può contenere lettere (S01700), quindi split max 3 parti
+
             $right = $parts[1];
-            // Formato atteso: NUM-SXXXXX-TIMESTAMP  oppure  NUM-SXXXXX
             if (preg_match('/^(\d+)-(S\d+)-?(\d*)$/', trim($right), $m)) {
                 echo json_encode([
                     'success' => true,
@@ -80,12 +68,11 @@ try {
             }
             break;
 
-        // ── 3. Andamento treno (fermate + ritardo) ────────────────────────────
-        // Endpoint: /andamentoTreno/{codStazione}/{codTreno}/{dataPartenzaMs}
+        // 3. Andamento treno (fermate + ritardo)
         case 'andamento_treno':
-            $codStazione  = sanitize($_GET['stazione'] ?? '');
-            $codTreno     = sanitize($_GET['treno']    ?? '');
-            $dataPartenza = sanitize($_GET['data']     ?? '');
+            $codStazione  = inpututente($_GET['stazione'] ?? '');
+            $codTreno     = inpututente($_GET['treno']    ?? '');
+            $dataPartenza = inpututente($_GET['data']     ?? '');
             if (!$codStazione || !$codTreno) throw new Exception('Parametri mancanti', 400);
             if (!$dataPartenza || !is_numeric($dataPartenza)) {
                 // Mezzanotte di oggi in ms
@@ -102,7 +89,7 @@ try {
         // italiano: "Mon Mar 30 2026 14:30:00 GMT+0100"
         // Il segno + di GMT+0100 NON deve essere url-encoded (deve restare +)
         case 'partenze':
-            $codStazione = sanitize($_GET['stazione'] ?? '');
+            $codStazione = inpututente($_GET['stazione'] ?? '');
             if (!$codStazione) throw new Exception('Stazione mancante', 400);
             $orario    = formatOrarioAPI();
             // rawurlencode codifica tutto incluso lo spazio come %20;
@@ -115,10 +102,10 @@ try {
             echo json_encode(['success' => true, 'data' => $data]);
             break;
 
-        // ── 5. Arrivi a una stazione ──────────────────────────────────────────
+        // 5. Arrivi a una stazione
         // Endpoint: /arrivi/{codiceStazione}/{orario}
         case 'arrivi':
-            $codStazione = sanitize($_GET['stazione'] ?? '');
+            $codStazione = inpututente($_GET['stazione'] ?? '');
             if (!$codStazione) throw new Exception('Stazione mancante', 400);
             $orario    = formatOrarioAPI();
             $orarioEnc = str_replace('%2B', '+', rawurlencode($orario));
@@ -128,13 +115,13 @@ try {
             echo json_encode(['success' => true, 'data' => $data]);
             break;
 
-        // ── 6. Soluzioni di viaggio Da→A ──────────────────────────────────────
+        // 6. Soluzioni di viaggio Da→A
         // Endpoint: /soluzioniViaggioNew/{codOrig}/{codDest}/{dateISO}
         // dateISO = "2026-03-30T14:30:00"
         case 'soluzioni_viaggio':
-            $orig = sanitize($_GET['orig'] ?? '');
-            $dest = sanitize($_GET['dest'] ?? '');
-            $dt   = sanitize($_GET['data'] ?? date('Y-m-d\TH:i:s'));
+            $orig = inpututente($_GET['orig'] ?? '');
+            $dest = inpututente($_GET['dest'] ?? '');
+            $dt   = inpututente($_GET['data'] ?? date('Y-m-d\TH:i:s'));
             if (!$orig || !$dest) throw new Exception('Origine o destinazione mancante', 400);
             // Assicuriamo formato corretto ISO senza millisecondi
             if (strlen($dt) === 16) $dt .= ':00'; // "2026-03-30T14:30" → aggiunge ":00"
@@ -143,10 +130,10 @@ try {
             echo json_encode(['success' => true, 'data' => $resp]);
             break;
 
-        // ── 7. Regione della stazione ──────────────────────────────────────────
+        // 7. Regione della stazione
         // Endpoint: /regione/{codStazione}  → restituisce un numero intero
         case 'regione':
-            $codStazione = sanitize($_GET['stazione'] ?? '');
+            $codStazione = inpututente($_GET['stazione'] ?? '');
             if (!$codStazione) throw new Exception('Stazione mancante', 400);
             $url  = VIAGGIATRENO_BASE . "/regione/{$codStazione}";
             $data = fetchUrl($url, false);
@@ -167,7 +154,7 @@ try {
     ]);
 }
 
-// ─── Funzioni Helper ──────────────────────────────────────────────────────────
+// FINE 
 
 /**
  * Esegue una chiamata cURL verso Viaggiatreno.
@@ -251,10 +238,9 @@ function formatOrarioAPI(): string
     );
 }
 
-/**
- * Sanifica input utente.
- */
-function sanitize(string $input): string
+
+// Input utente
+function inpututente(string $input): string
 {
     return htmlspecialchars(strip_tags(trim($input)), ENT_QUOTES, 'UTF-8');
 }
