@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 const VIAGGIATRENO_BASE = 'http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno';
-const CURL_TIMEOUT      = 12;
+const CURL_TIMEOUT = 12;
 
 $action = $_GET['action'] ?? '';
 
@@ -238,9 +238,7 @@ function formatOrarioAPI(): string
     );
 }
 
-
 // Input utente
-function inpututente(string $input): string
-{
+function inpututente(string $input): string {
     return htmlspecialchars(strip_tags(trim($input)), ENT_QUOTES, 'UTF-8');
 }

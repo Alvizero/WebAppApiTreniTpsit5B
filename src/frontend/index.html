@@ -11,7 +11,6 @@
   <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet" />
 </head>
 <body>
-
   <button class="theme-toggle" id="theme-toggle" aria-label="Cambia tema">
     <i class="fa-solid fa-sun" id="theme-icon"></i>
   </button>
@@ -40,14 +39,6 @@
         </div>
       </div>
       <div class="header-right">
-        <div class="header-stat">
-          <span class="stat-label">Rete</span>
-          <span class="stat-value">Trenitalia</span>
-        </div>
-        <div class="header-stat">
-          <span class="stat-label">Copertura</span>
-          <span class="stat-value">Italia</span>
-        </div>
         <div class="header-clock" id="live-clock">--:--</div>
       </div>
     </div>
@@ -57,7 +48,7 @@
     <button class="tab-btn active" role="tab" aria-selected="true" data-tab="treno" aria-controls="tab-treno">
       <span class="tab-num">01</span>
       <i class="fa-solid fa-magnifying-glass"></i>
-      <span class="tab-label">Cerca Treno</span>
+      <span class="tab-label">Segui Treno</span>
       <span class="tab-indicator"></span>
     </button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="stazione" aria-controls="tab-stazione">
@@ -75,15 +66,14 @@
   </nav>
 
   <main class="main-content">
-
     <section id="tab-treno" class="tab-panel active" role="tabpanel">
       <div class="panel-header">
         <div class="panel-header-text">
-          <h2>Traccia <em>Treno</em></h2>
-          <p>Inserisci il numero del treno per seguirne lo stato in tempo reale</p>
+          <h2>Segui <em>Treno</em></h2>
+          <p>Inserisci il numero del treno per seguire lo stato in tempo reale</p>
         </div>
         <div class="panel-deco">
-          <span class="deco-tag">REAL-TIME</span>
+          <span class="deco-tag">TRACCIA</span>
         </div>
       </div>
       <div class="search-bar">
@@ -95,7 +85,7 @@
         <button class="btn-primary" id="btn-cerca-treno">
           <span class="btn-inner">
             <i class="fa-solid fa-satellite-dish"></i>
-            <span>Traccia</span>
+            <span>Cerca</span>
           </span>
           <span class="btn-shimmer"></span>
         </button>
@@ -107,10 +97,10 @@
       <div class="panel-header">
         <div class="panel-header-text">
           <h2>Tabellone <em>Stazione</em></h2>
-          <p>Partenze e arrivi in tempo reale</p>
+          <p>Inserisci il nome della stazione per seguire partenze e arrivi in tempo reale</p>
         </div>
         <div class="panel-deco">
-          <span class="deco-tag">LIVE BOARD</span>
+          <span class="deco-tag">TABELLONE</span>
         </div>
       </div>
       <div class="search-bar">
@@ -144,10 +134,10 @@
       <div class="panel-header">
         <div class="panel-header-text">
           <h2>Soluzioni di <em>Viaggio</em></h2>
-          <p>Pianifica il percorso migliore</p>
+          <p>Inserisci il nome della due stazionei per trovare il percorso migliore</p>
         </div>
         <div class="panel-deco">
-          <span class="deco-tag">JOURNEY PLANNER</span>
+          <span class="deco-tag">PIANIFICA</span>
         </div>
       </div>
       <div class="viaggio-form">
@@ -204,7 +194,6 @@
       </div>
       <div id="result-viaggio" class="result-area" aria-live="polite"></div>
     </section>
-
   </main>
 
   <footer class="site-footer">
@@ -220,7 +209,7 @@
   </footer>
 
   <div id="toast-container" aria-live="assertive" aria-atomic="true"></div>
-
   <script src="script.js"></script>
 </body>
+
 </html>

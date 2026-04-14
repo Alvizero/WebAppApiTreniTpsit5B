@@ -1,12 +1,12 @@
 'use strict';
 
-const API = 'api.php';
+const API = '../backend/api.php';
 
 // ─── Fetch ────────────────────────────────────────────────────────────────────
 async function apiFetch(params) {
   const url = new URL(API, window.location.href);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const res  = await fetch(url.toString());
+  const res = await fetch(url.toString());
   const json = await res.json();
   if (!json.success) throw new Error(json.error || 'Errore sconosciuto');
   return json.data;
@@ -38,7 +38,7 @@ function ritardoBadge(min) {
 
 function orarioClass(min) {
   if (min === null) return '';
-  if (min < 0)  return 'anticipo';
+  if (min < 0) return 'anticipo';
   if (min === 0) return 'in-orario';
   return 'in-ritardo';
 }
@@ -67,20 +67,20 @@ function msgBox(tipo, icon, testo) {
 }
 
 // ─── Navigazione Tab ──────────────────────────────────────────────────────────
-let stazioneCorrente  = null;
+let stazioneCorrente = null;
 let direzioneCorrente = 'partenze';
 
 function resetTab(tabId) {
   switch (tabId) {
     case 'treno':
       document.getElementById('input-numero-treno').value = '';
-      document.getElementById('result-treno').innerHTML   = '';
+      document.getElementById('result-treno').innerHTML = '';
       break;
     case 'stazione':
-      document.getElementById('input-stazione').value      = '';
-      document.getElementById('hidden-stazione-id').value  = '';
+      document.getElementById('input-stazione').value = '';
+      document.getElementById('hidden-stazione-id').value = '';
       document.getElementById('result-stazione').innerHTML = '';
-      document.getElementById('toggle-dir').hidden         = true;
+      document.getElementById('toggle-dir').hidden = true;
       direzioneCorrente = 'partenze';
       document.querySelectorAll('.toggle-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.dir === 'partenze');
@@ -88,11 +88,11 @@ function resetTab(tabId) {
       stazioneCorrente = null;
       break;
     case 'viaggio':
-      document.getElementById('input-orig').value          = '';
-      document.getElementById('hidden-orig-id').value      = '';
-      document.getElementById('input-dest').value          = '';
-      document.getElementById('hidden-dest-id').value      = '';
-      document.getElementById('result-viaggio').innerHTML  = '';
+      document.getElementById('input-orig').value = '';
+      document.getElementById('hidden-orig-id').value = '';
+      document.getElementById('input-dest').value = '';
+      document.getElementById('hidden-dest-id').value = '';
+      document.getElementById('result-viaggio').innerHTML = '';
       setDefaultDatetime();
       break;
   }
@@ -152,7 +152,7 @@ async function apriTreno(numero) {
 
 async function apriStazione(id, nome) {
   navigaTab('stazione');
-  document.getElementById('input-stazione').value     = nome;
+  document.getElementById('input-stazione').value = nome;
   document.getElementById('hidden-stazione-id').value = id;
   stazioneCorrente = { id, nome };
   await caricaTabellone(id, nome, direzioneCorrente);
@@ -160,10 +160,10 @@ async function apriStazione(id, nome) {
 
 // ─── Autocompletamento ────────────────────────────────────────────────────────
 function initAutocomplete(inputId, listId, hiddenId, onSelect) {
-  const input  = document.getElementById(inputId);
-  const list   = document.getElementById(listId);
+  const input = document.getElementById(inputId);
+  const list = document.getElementById(listId);
   const hidden = document.getElementById(hiddenId);
-  let timer    = null;
+  let timer = null;
 
   input.addEventListener('input', () => {
     hidden.value = '';
@@ -181,7 +181,7 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
   });
 
   input.addEventListener('keydown', e => {
-    const items   = [...list.querySelectorAll('li')];
+    const items = [...list.querySelectorAll('li')];
     const current = list.querySelector('[aria-selected="true"]');
     let idx = items.indexOf(current);
 
@@ -215,7 +215,7 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
         <span class="station-id">${item.id}</span>`;
       li.addEventListener('mousedown', e => e.preventDefault());
       li.addEventListener('click', () => {
-        input.value  = item.nome;
+        input.value = item.nome;
         hidden.value = item.id;
         closeList();
         onSelect?.(item);
@@ -229,11 +229,11 @@ function initAutocomplete(inputId, listId, hiddenId, onSelect) {
 }
 
 initAutocomplete('input-stazione', 'autocomplete-stazione', 'hidden-stazione-id');
-initAutocomplete('input-orig',     'autocomplete-orig',     'hidden-orig-id');
-initAutocomplete('input-dest',     'autocomplete-dest',     'hidden-dest-id');
+initAutocomplete('input-orig', 'autocomplete-orig', 'hidden-orig-id');
+initAutocomplete('input-dest', 'autocomplete-dest', 'hidden-dest-id');
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TAB 1 — CERCA TRENO
+// TAB 1 — SEGUI TRENO
 // ═══════════════════════════════════════════════════════════════════════════════
 document.getElementById('btn-cerca-treno').addEventListener('click', cercaTreno);
 document.getElementById('input-numero-treno').addEventListener('keydown', e => {
@@ -254,10 +254,10 @@ async function cercaTreno() {
     el.innerHTML = loaderHTML('Caricamento andamento in tempo reale…');
 
     const andamento = await apiFetch({
-      action:   'andamento_treno',
+      action: 'andamento_treno',
       stazione: meta.codStazione,
-      treno:    meta.codTreno,
-      data:     meta.timestamp || ''
+      treno: meta.codTreno,
+      data: meta.timestamp || ''
     });
 
     el.innerHTML = renderAndamento(andamento, meta);
@@ -272,24 +272,17 @@ function renderAndamento(d, meta) {
     return msgBox('error', 'circle-exclamation', 'Nessun dato disponibile per questo treno.');
 
   const ritardoMin = d.ritardo ?? d.ritardoUltimoRilevamento ?? null;
-  const soppresso  = d.provvedimento === 1;
-  const numero     = d.numeroTreno ?? meta.codTreno ?? '—';
-  const categoria  = d.categoria ?? '';
-  const origine    = d.origine ?? '—';
-  const dest       = d.destinazione ?? '—';
-  const fermate    = d.fermate ?? [];
+  const soppresso = d.provvedimento === 1;
+  const numero = d.numeroTreno ?? meta.codTreno ?? '—';
+  const categoria = d.categoria ?? '';
+  const origine = d.origine ?? '—';
+  const dest = d.destinazione ?? '—';
+  const fermate = d.fermate ?? [];
 
-  const ultimoRil = (d.stazioneUltimoRilevamento && d.stazioneUltimoRilevamento !== 'undefined')
-    ? d.stazioneUltimoRilevamento : '—';
+  const ultimoRil = (d.stazioneUltimoRilevamento && d.stazioneUltimoRilevamento !== 'undefined') ? d.stazioneUltimoRilevamento : '—';
   const oraUlt = d.oraUltimoRilevamento ? fmtTime(d.oraUltimoRilevamento) : '';
-
-  const badgeHTML = soppresso
-    ? '<span class="badge-ritardo badge-soppresso"><i class="fa-solid fa-ban"></i> Soppresso</span>'
-    : ritardoBadge(ritardoMin);
-
-  const origineHTML = meta.codStazione
-    ? `<span class="link-stazione" data-id="${meta.codStazione}" data-nome="${origine}">${origine}</span>`
-    : origine;
+  const badgeHTML = soppresso ? '<span class="badge-ritardo badge-soppresso"><i class="fa-solid fa-ban"></i> Soppresso</span>' : ritardoBadge(ritardoMin);
+  const origineHTML = meta.codStazione ? `<span class="link-stazione" data-id="${meta.codStazione}" data-nome="${origine}">${origine}</span>` : origine;
 
   return `
     <div class="treno-card">
@@ -314,46 +307,35 @@ function renderAndamento(d, meta) {
         <div class="meta-item">
           <i class="fa-solid fa-calendar-day"></i>
           <span>Data: <strong>${d.dataPartenzaTreno
-            ? new Date(d.dataPartenzaTreno).toLocaleDateString('it-IT') : '—'}</strong></span>
+      ? new Date(d.dataPartenzaTreno).toLocaleDateString('it-IT') : '—'}</strong></span>
         </div>
       </div>
       ${fermate.length
-        ? renderFermate(fermate)
-        : `<div style="padding:1rem 1.5rem">${msgBox('empty', 'circle-info', 'Nessuna fermata disponibile.')}</div>`}
+      ? renderFermate(fermate)
+      : `<div style="padding:1rem 1.5rem">${msgBox('empty', 'circle-info', 'Nessuna fermata disponibile.')}</div>`}
     </div>`;
 }
 
 function renderFermate(fermate) {
-  const lastPassataIndex = fermate
-    .map((f, i) => (f.actualFermataType && f.actualFermataType !== 0 ? i : -1))
-    .filter(i => i !== -1).pop();
+  const lastPassataIndex = fermate.map((f, i) => (f.actualFermataType && f.actualFermataType !== 0 ? i : -1)).filter(i => i !== -1).pop();
 
   const rows = fermate.map((f, index) => {
-    const nome   = f.stazione ?? '—';
-    const codSt  = f.id ?? '';
+    const nome = f.stazione ?? '—';
+    const codSt = f.id ?? '';
     const progPart = f.programmataPartenza ?? f.programmataArrivo ?? f.programmata ?? f.orarioArrivo ?? f.orarioPartenza ?? null;
-    const effPart  = f.effettivaPartenza ?? f.effettivaArrivo ?? f.effettiva ?? null;
-    const ritMin   = calcRitardoMin(progPart, effPart);
-    const binario  = f.binarioProgrammatoPartenzaDescrizione ?? f.binarioProgrammatoArrivoDescrizione ?? '—';
-    const binEff   = f.binarioEffettivoPartenzaDescrizione ?? f.binarioEffettivoArrivoDescrizione ?? '';
+    const effPart = f.effettivaPartenza ?? f.effettivaArrivo ?? f.effettiva ?? null;
+    const ritMin = calcRitardoMin(progPart, effPart);
+    const binario = f.binarioProgrammatoPartenzaDescrizione ?? f.binarioProgrammatoArrivoDescrizione ?? '—';
+    const binEff = f.binarioEffettivoPartenzaDescrizione ?? f.binarioEffettivoArrivoDescrizione ?? '';
     const isPassata = (f.actualFermataType ?? 0) !== 0;
-    const isUltima  = index === lastPassataIndex;
+    const isUltima = index === lastPassataIndex;
 
     let rowClass = isPassata ? 'fermata-passata' : 'fermata-futura';
     if (isUltima) rowClass += ' fermata-ultima';
 
-    const effHTML  = effPart
-      ? `<span class="orario-effettivo ${orarioClass(ritMin)}">${fmtTime(effPart)}</span>`
-      : '<span class="orario-effettivo">—</span>';
-
-    const binHTML  = binario !== '—'
-      ? `<span class="binario-chip">${binario}</span>${binEff && binEff !== binario
-          ? ` <span class="binario-chip binario-eff">${binEff}</span>` : ''}`
-      : '—';
-
-    const nomeHTML = nome !== '—'
-      ? `<span class="link-stazione" data-id="${codSt}" data-nome="${nome}">${nome}</span>`
-      : nome;
+    const effHTML = effPart ? `<span class="orario-effettivo ${orarioClass(ritMin)}">${fmtTime(effPart)}</span>` : '<span class="orario-effettivo">—</span>';
+    const binHTML = binario !== '—' ? `<span class="binario-chip">${binario}</span>${binEff && binEff !== binario ? ` <span class="binario-chip binario-eff">${binEff}</span>` : ''}` : '—';
+    const nomeHTML = nome !== '—' ? `<span class="link-stazione" data-id="${codSt}" data-nome="${nome}">${nome}</span>` : nome;
 
     return `
       <tr class="${rowClass}">
@@ -390,7 +372,7 @@ function renderFermate(fermate) {
 // TAB 2 — TABELLONE STAZIONE
 // ═══════════════════════════════════════════════════════════════════════════════
 document.getElementById('btn-cerca-stazione').addEventListener('click', () => {
-  const id   = document.getElementById('hidden-stazione-id').value;
+  const id = document.getElementById('hidden-stazione-id').value;
   const nome = document.getElementById('input-stazione').value.trim();
   if (!id) { showToast('Seleziona una stazione dalla lista dei suggerimenti.'); return; }
   stazioneCorrente = { id, nome };
@@ -399,7 +381,7 @@ document.getElementById('btn-cerca-stazione').addEventListener('click', () => {
 
 document.getElementById('input-stazione').addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  const id   = document.getElementById('hidden-stazione-id').value;
+  const id = document.getElementById('hidden-stazione-id').value;
   const nome = document.getElementById('input-stazione').value.trim();
   if (id) { stazioneCorrente = { id, nome }; caricaTabellone(id, nome, direzioneCorrente); }
 });
@@ -438,26 +420,21 @@ function renderTabellone(trains, nomeStazione, dir) {
   }
 
   const isPartenze = dir === 'partenze';
-  const colLabel   = isPartenze ? 'Destinazione' : 'Provenienza';
-  const orLabel    = isPartenze ? 'Partenza' : 'Arrivo';
+  const colLabel = isPartenze ? 'Destinazione' : 'Provenienza';
+  const orLabel = isPartenze ? 'Partenza' : 'Arrivo';
 
   const rows = trains.map(t => {
-    const numero   = t.numeroTreno ?? '—';
-    const categ    = t.categoria ?? '';
-    const dest     = isPartenze ? (t.destinazione ?? '—') : (t.origine ?? '—');
-    const orario   = isPartenze ? t.orarioPartenza : t.orarioArrivo;
-    const ritardo  = t.ritardo ?? null;
-    const codDest  = isPartenze ? (t.codiceDestinazione ?? '') : (t.codiceOrigine ?? '');
-    const binProg  = t.binarioProgrammatoPartenzaDescrizione ?? t.binarioProgrammatoArrivoDescrizione ?? '';
-    const binEff   = t.binarioEffettivoPartenzaDescrizione   ?? t.binarioEffettivoArrivoDescrizione   ?? '';
+    const numero = t.numeroTreno ?? '—';
+    const categ = t.categoria ?? '';
+    const dest = isPartenze ? (t.destinazione ?? '—') : (t.origine ?? '—');
+    const orario = isPartenze ? t.orarioPartenza : t.orarioArrivo;
+    const ritardo = t.ritardo ?? null;
+    const codDest = isPartenze ? (t.codiceDestinazione ?? '') : (t.codiceOrigine ?? '');
+    const binProg = t.binarioProgrammatoPartenzaDescrizione ?? t.binarioProgrammatoArrivoDescrizione ?? '';
+    const binEff = t.binarioEffettivoPartenzaDescrizione ?? t.binarioEffettivoArrivoDescrizione ?? '';
 
-    const numeroHTML = numero !== '—'
-      ? `<span class="link-treno" data-numero="${numero}" title="Traccia treno ${numero}">${numero}</span>`
-      : '—';
-
-    const destHTML = dest !== '—'
-      ? `<span class="link-stazione" data-id="${codDest}" data-nome="${dest}">${dest}</span>`
-      : '—';
+    const numeroHTML = numero !== '—' ? `<span class="link-treno" data-numero="${numero}" title="Segui Treno ${numero}">${numero}</span>` : '—';
+    const destHTML = dest !== '—' ? `<span class="link-stazione" data-id="${codDest}" data-nome="${dest}">${dest}</span>` : '—';
 
     let ritardoHTML = `<span style="color:var(--text-muted)">—</span>`;
     if (ritardo !== null) {
@@ -512,8 +489,8 @@ function setDefaultDatetime() {
 setDefaultDatetime();
 
 document.getElementById('btn-swap').addEventListener('click', () => {
-  const iO = document.getElementById('input-orig'),      hO = document.getElementById('hidden-orig-id');
-  const iD = document.getElementById('input-dest'),      hD = document.getElementById('hidden-dest-id');
+  const iO = document.getElementById('input-orig'), hO = document.getElementById('hidden-orig-id');
+  const iD = document.getElementById('input-dest'), hD = document.getElementById('hidden-dest-id');
   [iO.value, iD.value] = [iD.value, iO.value];
   [hO.value, hD.value] = [hD.value, hO.value];
 });
@@ -521,14 +498,14 @@ document.getElementById('btn-swap').addEventListener('click', () => {
 document.getElementById('btn-cerca-viaggio').addEventListener('click', cercaViaggio);
 
 async function cercaViaggio() {
-  const origId   = document.getElementById('hidden-orig-id').value;
-  const destId   = document.getElementById('hidden-dest-id').value;
+  const origId = document.getElementById('hidden-orig-id').value;
+  const destId = document.getElementById('hidden-dest-id').value;
   const origNome = document.getElementById('input-orig').value.trim();
   const destNome = document.getElementById('input-dest').value.trim();
-  const dataVal  = document.getElementById('input-data').value;
+  const dataVal = document.getElementById('input-data').value;
 
   if (!origId) { showToast('Seleziona la stazione di partenza dalla lista.'); return; }
-  if (!destId) { showToast('Seleziona la stazione di arrivo dalla lista.');   return; }
+  if (!destId) { showToast('Seleziona la stazione di arrivo dalla lista.'); return; }
 
   const el = document.getElementById('result-viaggio');
   el.innerHTML = loaderHTML('Ricerca soluzioni di viaggio…');
@@ -562,16 +539,14 @@ function renderSoluzioni(data, origNome, destNome) {
 
   const cards = soluzioni.map(sol => {
     const partenza = sol.orarioPartenza ?? null;
-    const arrivo   = sol.orarioArrivo   ?? null;
-    const durata   = formatDurata(partenza, arrivo);
-    const cambi    = Math.max(0, (sol.vehicles?.length ?? 1) - 1);
+    const arrivo = sol.orarioArrivo ?? null;
+    const durata = formatDurata(partenza, arrivo);
+    const cambi = Math.max(0, (sol.vehicles?.length ?? 1) - 1);
     const cambiCls = cambi === 0 ? 'zero-cambi' : '';
 
     const legs = (sol.vehicles ?? []).map(v => {
       const numTreno = v.numeroTreno ?? '—';
-      const numHTML  = numTreno !== '—'
-        ? `<span class="link-treno leg-treno" data-numero="${numTreno}">${numTreno}</span>`
-        : '<span class="leg-treno">—</span>';
+      const numHTML = numTreno !== '—' ? `<span class="link-treno leg-treno" data-numero="${numTreno}">${numTreno}</span>` : '<span class="leg-treno">—</span>';
 
       return `
         <div class="leg-item">
@@ -616,9 +591,9 @@ function renderSoluzioni(data, origNome, destNome) {
 
 // ─── Clock & Theme (erano inline in index.html) ───────────────────────────────
 (function () {
-  const clockEl    = document.getElementById('live-clock');
-  const html       = document.documentElement;
-  const toggleBtn  = document.getElementById('theme-toggle');
+  const clockEl = document.getElementById('live-clock');
+  const html = document.documentElement;
+  const toggleBtn = document.getElementById('theme-toggle');
   const toggleIcon = document.getElementById('theme-icon');
 
   function updateClock() {
