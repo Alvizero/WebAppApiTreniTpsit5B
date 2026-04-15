@@ -83,11 +83,8 @@ try {
             echo json_encode(['success' => true, 'data' => $data]);
             break;
 
-        // ── 4. Partenze da una stazione ───────────────────────────────────────
+        // 4. Partenze da una stazione
         // Endpoint: /partenze/{codiceStazione}/{orario}
-        // IMPORTANTE: l'orario deve essere nel formato esatto usato dal browser
-        // italiano: "Mon Mar 30 2026 14:30:00 GMT+0100"
-        // Il segno + di GMT+0100 NON deve essere url-encoded (deve restare +)
         case 'partenze':
             $codStazione = inpututente($_GET['stazione'] ?? '');
             if (!$codStazione) throw new Exception('Stazione mancante', 400);
@@ -117,7 +114,6 @@ try {
 
         // 6. Soluzioni di viaggio Da→A
         // Endpoint: /soluzioniViaggioNew/{codOrig}/{codDest}/{dateISO}
-        // dateISO = "2026-03-30T14:30:00"
         case 'soluzioni_viaggio':
             $orig = inpututente($_GET['orig'] ?? '');
             $dest = inpututente($_GET['dest'] ?? '');
@@ -154,12 +150,9 @@ try {
     ]);
 }
 
-// FINE 
+// FINE CHIAMATE API DA FRONTEND 
 
-/**
- * Esegue una chiamata cURL verso Viaggiatreno.
- * Se $isJson=true decodifica come JSON, altrimenti restituisce la stringa grezza.
- */
+// CHIAMATE VERSO SITO DELLE API
 function fetchUrl(string $url, bool $isJson = true): mixed
 {
     $ch = curl_init();
@@ -176,7 +169,6 @@ function fetchUrl(string $url, bool $isJson = true): mixed
             'Referer: http://www.viaggiatreno.it/',
             'Origin: http://www.viaggiatreno.it',
         ],
-        // Disabilita verifica SSL (l'API è HTTP ma per sicurezza)
         CURLOPT_SSL_VERIFYPEER => false,
     ]);
 
@@ -200,17 +192,9 @@ function fetchUrl(string $url, bool $isJson = true): mixed
     return $decoded;
 }
 
-/**
- * Genera la stringa orario nel formato ESATTO atteso da Viaggiatreno:
- *   "Mon Mar 30 2026 14:30:00 GMT+0100"
- *
- * Nota: l'API è sensibile al formato. I nomi di giorno/mese DEVONO essere
- * in inglese e abbreviati a 3 caratteri. Il fuso orario è sempre GMT+0100
- * (ora italiana invernale; d'estate sarebbe GMT+0200 ma l'API accetta entrambi).
- */
+// ORARIO
 function formatOrarioAPI(): string
 {
-    // Usiamo il timestamp corrente con fuso Europe/Rome
     $ts = time();
     $dt = new DateTimeImmutable('now', new DateTimeZone('Europe/Rome'));
 
@@ -223,19 +207,10 @@ function formatOrarioAPI(): string
     $year   = $dt->format('Y');
     $time   = $dt->format('H:i:s');
 
-    // Offset fuso: +0100 o +0200 a seconda dell'ora legale
     $offset = $dt->format('O'); // es. "+0100" o "+0200"
     $gmt    = 'GMT' . $offset;  // es. "GMT+0100"
 
-    return sprintf(
-        '%s %s %02d %s %s %s',
-        $days[$dow],
-        $months[$mon - 1],
-        $day,
-        $year,
-        $time,
-        $gmt
-    );
+    return sprintf('%s %s %02d %s %s %s', $days[$dow],$months[$mon - 1], $day, $year, $time, $gmt);
 }
 
 // Input utente

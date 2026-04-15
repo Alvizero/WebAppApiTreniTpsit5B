@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Bebas+Neue&display=swap');
 
-/* ── Reset ──────────────────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -9,7 +8,6 @@
   padding: 0;
 }
 
-/* ── Design Tokens: Dark Mode (default) ─────────────────────────────────── */
 :root {
   /* Surfaces */
   --bg: #080a0f;
@@ -65,7 +63,6 @@
   --t-spring: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ── Light Mode Override ────────────────────────────────────────────────── */
 [data-theme="light"] {
   --bg: #f5f3ef;
   --surface-1: #ffffff;
@@ -92,7 +89,6 @@
   --shadow-accent: 0 8px 32px rgba(212, 160, 23, 0.20);
 }
 
-/* ── Base ───────────────────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
   font-size: 16px;
@@ -110,7 +106,6 @@ body {
   transition: background var(--t-smooth), color var(--t-smooth);
 }
 
-/* ── Ambient Background ─────────────────────────────────────────────────── */
 .ambient-bg {
   position: fixed;
   inset: 0;
@@ -179,7 +174,6 @@ body {
   opacity: 0.5;
 }
 
-/* ── Theme Toggle ───────────────────────────────────────────────────────── */
 .theme-toggle {
   position: fixed;
   top: 1.25rem;
@@ -208,7 +202,7 @@ body {
   transform: rotate(20deg) scale(1.1);
 }
 
-/* ── Header ─────────────────────────────────────────────────────────────── */
+/* Header */
 .site-header {
   position: relative;
   z-index: 10;
@@ -246,7 +240,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* Shimmer sul logo — stesso effetto di .btn-shimmer */
+/* logo */
 .logo-lockup {
   position: relative;
   overflow: hidden;
@@ -395,7 +389,7 @@ body {
   text-align: right;
 }
 
-/* ── Navigation ─────────────────────────────────────────────────────────── */
+/* Navigation */
 .tab-nav {
   position: relative;
   z-index: 9;
@@ -468,7 +462,7 @@ body {
   transform: translateX(-50%) scaleX(1);
 }
 
-/* ── Main Content ───────────────────────────────────────────────────────── */
+/*  Main */
 .main-content {
   flex: 1;
   position: relative;
@@ -479,7 +473,7 @@ body {
   padding: 2.5rem 2rem 3rem;
 }
 
-/* ── Tab Panels ─────────────────────────────────────────────────────────── */
+/* Tab Panels */
 .tab-panel {
   display: none;
 }
@@ -501,7 +495,7 @@ body {
   }
 }
 
-/* ── Panel Header ───────────────────────────────────────────────────────── */
+/* Panel Header */
 .panel-header {
   display: flex;
   align-items: flex-end;
@@ -547,7 +541,7 @@ body {
   border-radius: var(--radius-xs);
 }
 
-/* ── Search Bar ─────────────────────────────────────────────────────────── */
+/* Search Bar */
 .search-bar {
   display: flex;
   gap: 0.75rem;
@@ -635,7 +629,7 @@ input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────────────── */
+/* Buttons */
 .btn-primary {
   position: relative;
   padding: 0.9rem 1.75rem;
@@ -701,7 +695,7 @@ input[type="number"]::-webkit-inner-spin-button {
   justify-content: center;
 }
 
-/* ── Autocomplete ───────────────────────────────────────────────────────── */
+/* Autocomplete */
 .autocomplete-wrap {
   position: relative;
 }
@@ -767,7 +761,7 @@ input[type="number"]::-webkit-inner-spin-button {
   letter-spacing: 0.05em;
 }
 
-/* ── Toggle Group ───────────────────────────────────────────────────────── */
+/* Toggle */
 .toggle-group {
   display: flex;
   gap: 0;
@@ -806,7 +800,7 @@ input[type="number"]::-webkit-inner-spin-button {
   font-weight: 600;
 }
 
-/* ── Swap Button ────────────────────────────────────────────────────────── */
+/* Swap Button */
 .btn-swap {
   width: 40px;
   height: 40px;
@@ -829,7 +823,7 @@ input[type="number"]::-webkit-inner-spin-button {
   transform: rotate(180deg) scale(1.1);
 }
 
-/* ── Viaggio Form ───────────────────────────────────────────────────────── */
+/* Viaggio */
 .viaggio-form {
   background: var(--surface-1);
   border: 1px solid var(--border);
@@ -887,7 +881,7 @@ input[type="number"]::-webkit-inner-spin-button {
   padding-bottom: 0;
 }
 
-/* ── Loader ─────────────────────────────────────────────────────────────── */
+/* Loader */
 .loader {
   display: flex;
   flex-direction: column;
@@ -937,7 +931,7 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 }
 
-/* ── Message Boxes ──────────────────────────────────────────────────────── */
+/*  Message Boxes */
 .msg-box {
   padding: 1.2rem 1.5rem;
   border-radius: var(--radius);
@@ -984,12 +978,12 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text-muted);
 }
 
-/* ── Result Area ────────────────────────────────────────────────────────── */
+/* Result Area */
 .result-area {
   animation: panel-enter 0.4s ease;
 }
 
-/* ── Treno Card ─────────────────────────────────────────────────────────── */
+/* Treno */
 .treno-card {
   background: var(--surface-1);
   border: 1px solid var(--border);
@@ -1070,7 +1064,7 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text-primary);
 }
 
-/* ── Badge Ritardo ──────────────────────────────────────────────────────── */
+/* Badge Ritardo */
 .badge-ritardo {
   display: inline-flex;
   align-items: center;
@@ -1107,7 +1101,7 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text-muted);
 }
 
-/* ── Fermate Title ──────────────────────────────────────────────────────── */
+/* Fermate */
 .fermate-title {
   padding: 1.25rem 2rem 0.5rem;
   font-family: var(--font-mono);
@@ -1118,13 +1112,6 @@ input[type="number"]::-webkit-inner-spin-button {
   color: var(--text-muted);
 }
 
-/* ════════════════════════════════════════════════════════════════════════════
-   FERMATE TABLE — layout corretto con barra di percorso laterale
-   
-   Strategia: la colonna .col-progresso usa display:flex verticale con la
-   linea assoluta e il pallino relativo, tutto contenuto in una cella
-   con altezza uniforme grazie al padding uguale alle altre celle.
-═══════════════════════════════════════════════════════════════════════════ */
 .fermate-table {
   width: 100%;
   border-collapse: collapse;
@@ -1132,7 +1119,7 @@ input[type="number"]::-webkit-inner-spin-button {
   table-layout: fixed;
 }
 
-/* Larghezze colonne fisse per allineamento uniforme */
+/* Larghezze colonne */
 .fermate-table colgroup col:nth-child(1) {
   width: 90px;
 }
@@ -1158,7 +1145,6 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* binario */
-
 .fermate-table th {
   padding: 0.6rem 1rem;
   text-align: left;
@@ -1173,7 +1159,6 @@ input[type="number"]::-webkit-inner-spin-button {
   white-space: nowrap;
 }
 
-/* Prima th (colonna progresso) — nessun padding, nessun testo */
 .fermate-table th:first-child {
   padding: 0;
   width: 44px;
@@ -1204,7 +1189,7 @@ input[type="number"]::-webkit-inner-spin-button {
   background: var(--accent-subtle);
 }
 
-/* ── Colonna progresso: struttura flex verticale ────────────────────────── */
+/* Colonna progresso */
 .col-progresso {
   padding: 0 !important;
   width: 44px;
@@ -1213,7 +1198,6 @@ input[type="number"]::-webkit-inner-spin-button {
   /* necessario perché usiamo position:absolute */
 }
 
-/* Wrapper interno che occupa tutta l'altezza della riga */
 .col-progresso-inner {
   position: absolute;
   inset: 0;
@@ -1224,7 +1208,7 @@ input[type="number"]::-webkit-inner-spin-button {
   overflow: visible;
 }
 
-/* Linea verticale continua */
+/* Linea percorso treno */
 .linea-percorso {
   position: absolute;
   top: 0;
@@ -1236,12 +1220,10 @@ input[type="number"]::-webkit-inner-spin-button {
   z-index: 1;
 }
 
-/* Prima riga: linea parte dal centro verso il basso */
 tr:first-child .col-progresso .linea-percorso {
   top: 50%;
 }
 
-/* Ultima riga: linea arriva al centro */
 tr:last-child .col-progresso .linea-percorso {
   bottom: 50%;
 }
@@ -1250,7 +1232,7 @@ tr:last-child .col-progresso .linea-percorso {
   background: var(--accent);
 }
 
-/* Pallino stazione */
+/* Pallino posizione treno */
 .punto-percorso {
   position: relative;
   z-index: 2;
@@ -1288,7 +1270,7 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* ── Fermata: nome e orari ──────────────────────────────────────────────── */
+/*  Fermata */
 .fermata-nome {
   font-weight: 500;
   color: var(--text-primary);
@@ -1345,7 +1327,7 @@ tr:last-child .col-progresso .linea-percorso {
   color: var(--text-primary);
 }
 
-/* ── Tabellone Stazione ─────────────────────────────────────────────────── */
+/* Tabellone Stazione */
 .tabellone-header {
   display: flex;
   align-items: center;
@@ -1406,7 +1388,7 @@ tr:last-child .col-progresso .linea-percorso {
   background: var(--accent-subtle);
 }
 
-/* ── Soluzioni Cards ────────────────────────────────────────────────────── */
+/* Soluzioni di viaggio */
 .soluzione-card {
   background: var(--surface-1);
   border: 1px solid var(--border);
@@ -1518,7 +1500,7 @@ tr:last-child .col-progresso .linea-percorso {
   border-radius: var(--radius-xs);
 }
 
-/* ── Link cliccabili ────────────────────────────────────────────────────── */
+/* Link cliccabili */
 .link-treno,
 .link-stazione {
   cursor: pointer;
@@ -1540,7 +1522,6 @@ tr:last-child .col-progresso .linea-percorso {
   opacity: 0.7;
 }
 
-/* ── Utility Classes ────────────────────────────────────────────────────── */
 .in-orario {
   color: var(--go) !important;
 }
@@ -1553,7 +1534,7 @@ tr:last-child .col-progresso .linea-percorso {
   color: var(--info) !important;
 }
 
-/* ── Toast ──────────────────────────────────────────────────────────────── */
+/* Toast */
 #toast-container {
   position: fixed;
   bottom: 2rem;
@@ -1589,7 +1570,7 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* ── Footer ─────────────────────────────────────────────────────────────── */
+/* Footer */
 .site-footer {
   position: relative;
   z-index: 1;
@@ -1638,7 +1619,7 @@ tr:last-child .col-progresso .linea-percorso {
   font-family: var(--font-mono);
 }
 
-/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -1656,7 +1637,7 @@ tr:last-child .col-progresso .linea-percorso {
   background: var(--text-muted);
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 768px) {
   .header-inner {
     padding: 1.25rem 1.25rem 1rem;
@@ -1785,13 +1766,9 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   ANIMAZIONI AGGIUNTIVE — FraParid Train System
-   Tutto ciò che segue è puro strato animazione, non tocca colori,
-   font, spacing o struttura del CSS originale.
-═══════════════════════════════════════════════════════════════════════════ */
+/* ANIMAZIONI */
 
-/* ── 1. HEADER: entrata dall'alto ─────────────────────────────────────── */
+/* HEADER */
 .site-header {
   animation: header-drop 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -1808,12 +1785,12 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* ── 2. NAV: entrata dopo l'header ────────────────────────────────────── */
+/* NAV */
 .tab-nav {
   animation: header-drop 0.5s 0.1s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* ── 3. LOGO BADGE: leggero bounce all'entrata ─────────────────────────── */
+/* LOGO BADGE: leggero bounce all'entrata */
 .logo-badge {
   animation: badge-pulse 3s ease-in-out infinite,
     logo-bounce 0.6s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -1831,7 +1808,7 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* ── 4. TAB ICON: spostamento verticale al hover ──────────────────────── */
+/* TAB ICON */
 .tab-btn .fa-solid {
   transition: transform var(--t-spring);
 }
@@ -1844,7 +1821,7 @@ tr:last-child .col-progresso .linea-percorso {
   transform: translateY(-2px);
 }
 
-/* ── 5. BUTTON: icona interna che scivola a destra al hover ───────────── */
+/* BUTTON */
 .btn-primary .btn-inner .fa-solid,
 .btn-primary .btn-inner i {
   transition: transform var(--t-spring);
@@ -1855,18 +1832,18 @@ tr:last-child .col-progresso .linea-percorso {
   transform: translateX(4px);
 }
 
-/* Click feedback: micro-pressione */
+/* Click feedback */
 .btn-primary:active {
   transform: translateY(1px) scale(0.98);
 }
 
-/* ── 6. INPUT ICON: scala al focus ────────────────────────────────────── */
+/* INPUT ICON */
 .input-wrapper:focus-within .input-icon {
   color: var(--accent);
   transform: translateY(-50%) scale(1.2);
 }
 
-/* ── 7. AUTOCOMPLETE: dropdown che appare con fade+slide ─────────────── */
+/* AUTOCOMPLETE */
 .autocomplete-list {
   animation: dropdown-in 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
   transform-origin: top center;
@@ -1884,7 +1861,6 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* Voci autocomplete: scorrono verso destra al hover */
 .autocomplete-list li {
   transition: background var(--t-fast), color var(--t-fast),
     padding-left var(--t-fast);
@@ -1895,7 +1871,7 @@ tr:last-child .col-progresso .linea-percorso {
   padding-left: 1.25rem;
 }
 
-/* ── 8. TRENO CARD: entrata con leggero rimbalzo + hover lift ─────────── */
+/* TRENO CARD */
 .treno-card {
   animation: card-enter 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
   transition: border-color var(--t-smooth),
@@ -1920,7 +1896,7 @@ tr:last-child .col-progresso .linea-percorso {
   box-shadow: var(--shadow-lg);
 }
 
-/* ── 9. SOLUZIONE CARD: stagger entrata + hover lift ──────────────────── */
+/* SOLUZIONE CARD */
 .soluzione-card {
   animation: card-enter 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -1945,7 +1921,7 @@ tr:last-child .col-progresso .linea-percorso {
   animation-delay: 0.25s;
 }
 
-/* ── 10. TABELLONE RIGHE: entrata staggered da sinistra ──────────────── */
+/* TABELLONE RIGHE: entrata staggered da sinistra */
 .tabellone-table tbody tr {
   animation: row-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -2002,7 +1978,7 @@ tr:last-child .col-progresso .linea-percorso {
   animation-delay: 0.30s;
 }
 
-/* ── 11. FERMATE RIGHE: stesso stagger per le fermate del treno ─────── */
+/* FERMATE RIGHE */
 .fermate-table tbody tr {
   animation: row-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -2047,12 +2023,11 @@ tr:last-child .col-progresso .linea-percorso {
   animation-delay: 0.31s;
 }
 
-/* ── 12. THEME TOGGLE: rotazione extra al click ───────────────────────── */
+/* CAMBIO TEMA */
 .theme-toggle:active {
   transform: rotate(40deg) scale(0.95);
 }
 
-/* ── 13. DECO-TAG: leggero pulse al hover ─────────────────────────────── */
 .deco-tag {
   transition: transform var(--t-spring), background var(--t-fast),
     color var(--t-fast), box-shadow var(--t-fast);
@@ -2063,7 +2038,6 @@ tr:last-child .col-progresso .linea-percorso {
   background: var(--accent-subtle);
 }
 
-/* ── 14. LEG-ITEM: lieve indent al hover ─────────────────────────────── */
 .leg-item {
   transition: padding-left var(--t-fast);
 }
@@ -2072,7 +2046,7 @@ tr:last-child .col-progresso .linea-percorso {
   padding-left: 6px;
 }
 
-/* ── 15. MSG-BOX: shake per errori ───────────────────────────────────── */
+/* BOX ERRORI */
 .msg-error {
   animation: panel-enter 0.3s ease, shake 0.4s 0.3s ease both;
 }
@@ -2101,18 +2075,18 @@ tr:last-child .col-progresso .linea-percorso {
   }
 }
 
-/* ── 16. CLOCK: transizione di colore al cambio secondo ──────────────── */
+/* OROLOGIO */
 .header-clock {
   transition: color var(--t-fast), text-shadow var(--t-smooth);
 }
 
-/* ── 17. SCROLL SELECTION COLOR ──────────────────────────────────────── */
+/* SCROLL */
 ::selection {
   background: var(--accent);
   color: #000;
 }
 
-/* ── 18. REDUCED MOTION: rispetta preferenze accessibilità ───────────── */
+/* ANIMAZIONI MOVIMENTO */
 @media (prefers-reduced-motion: reduce) {
 
   *,

@@ -2,7 +2,7 @@
 
 const API = '../backend/api.php';
 
-// ─── Fetch ────────────────────────────────────────────────────────────────────
+// Fetch
 async function apiFetch(params) {
   const url = new URL(API, window.location.href);
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
@@ -12,7 +12,7 @@ async function apiFetch(params) {
   return json.data;
 }
 
-// ─── Formattatori ─────────────────────────────────────────────────────────────
+// Formattatori 
 function fmtTime(val) {
   if (!val) return '—';
   if (typeof val === 'string' && val.includes(':')) return val;
@@ -43,7 +43,7 @@ function orarioClass(min) {
   return 'in-ritardo';
 }
 
-// ─── Toast ────────────────────────────────────────────────────────────────────
+// Toast
 function showToast(msg, duration = 3500) {
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -52,7 +52,7 @@ function showToast(msg, duration = 3500) {
   setTimeout(() => toast.remove(), duration);
 }
 
-// ─── HTML helpers ─────────────────────────────────────────────────────────────
+// HTML helpers─
 function loaderHTML(text = 'Ricerca in corso…') {
   return `<div class="loader">
     <div class="loader-dots"><span></span><span></span><span></span></div>
@@ -66,7 +66,7 @@ function msgBox(tipo, icon, testo) {
   </div>`;
 }
 
-// ─── Navigazione Tab ──────────────────────────────────────────────────────────
+// Navigazione Tab
 let stazioneCorrente = null;
 let direzioneCorrente = 'partenze';
 
@@ -122,7 +122,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// ─── Link cliccabili (delegazione) ───────────────────────────────────────────
+// Link cliccabili
 document.addEventListener('click', async e => {
   const trenoEl = e.target.closest('.link-treno');
   if (trenoEl?.dataset.numero) { await apriTreno(trenoEl.dataset.numero); return; }
@@ -143,7 +143,7 @@ document.addEventListener('click', async e => {
   }
 });
 
-// ─── Navigazione programmativa ────────────────────────────────────────────────
+// Navigazione
 async function apriTreno(numero) {
   navigaTab('treno');
   document.getElementById('input-numero-treno').value = numero;
@@ -158,7 +158,7 @@ async function apriStazione(id, nome) {
   await caricaTabellone(id, nome, direzioneCorrente);
 }
 
-// ─── Autocompletamento ────────────────────────────────────────────────────────
+// Autocompletamento
 function initAutocomplete(inputId, listId, hiddenId, onSelect) {
   const input = document.getElementById(inputId);
   const list = document.getElementById(listId);
@@ -232,9 +232,9 @@ initAutocomplete('input-stazione', 'autocomplete-stazione', 'hidden-stazione-id'
 initAutocomplete('input-orig', 'autocomplete-orig', 'hidden-orig-id');
 initAutocomplete('input-dest', 'autocomplete-dest', 'hidden-dest-id');
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
 // TAB 1 — SEGUI TRENO
-// ═══════════════════════════════════════════════════════════════════════════════
+
 document.getElementById('btn-cerca-treno').addEventListener('click', cercaTreno);
 document.getElementById('input-numero-treno').addEventListener('keydown', e => {
   if (e.key === 'Enter') cercaTreno();
@@ -368,9 +368,9 @@ function renderFermate(fermate) {
     </table>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
 // TAB 2 — TABELLONE STAZIONE
-// ═══════════════════════════════════════════════════════════════════════════════
+
 document.getElementById('btn-cerca-stazione').addEventListener('click', () => {
   const id = document.getElementById('hidden-stazione-id').value;
   const nome = document.getElementById('input-stazione').value.trim();
@@ -476,9 +476,9 @@ function renderTabellone(trains, nomeStazione, dir) {
     </table>`;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
 // TAB 3 — SOLUZIONI DI VIAGGIO
-// ═══════════════════════════════════════════════════════════════════════════════
+
 function setDefaultDatetime() {
   const now = new Date();
   now.setSeconds(0, 0);
@@ -589,7 +589,8 @@ function renderSoluzioni(data, origNome, destNome) {
     ${cards}`;
 }
 
-// ─── Clock & Theme (erano inline in index.html) ───────────────────────────────
+
+// OROLOGIO E TEMA
 (function () {
   const clockEl = document.getElementById('live-clock');
   const html = document.documentElement;
@@ -614,3 +615,4 @@ function renderSoluzioni(data, origNome, destNome) {
     toggleIcon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
   });
 })();
+
