@@ -703,9 +703,9 @@ async function updateTrainMap(andamento) {
   const fermataUltima = lastPassataIdx >= 0 ? fermate[lastPassataIdx] : null;
 
   const targets = [
-    { fermata: fermataPartenza, icon: ICON_PARTENZA, label: '🟢 <strong>Partenza</strong>' },
-    { fermata: fermataArrivo,   icon: ICON_ARRIVO,   label: '🔴 <strong>Arrivo</strong>'   },
-    { fermata: fermataUltima,   icon: ICON_ULTIMA,   label: '🔵 <strong>Ultima posizione</strong>' },
+    { fermata: fermataPartenza, icon: ICON_PARTENZA, label: '<strong>Partenza</strong>' },
+    { fermata: fermataArrivo,   icon: ICON_ARRIVO,   label: '<strong>Arrivo</strong>'   },
+    { fermata: fermataUltima,   icon: ICON_ULTIMA,   label: '<strong>Ultima posizione</strong>' },
   ];
 
   // Geocodifica in parallelo
