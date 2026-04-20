@@ -75,6 +75,8 @@ function resetTab(tabId) {
     case 'treno':
       document.getElementById('input-numero-treno').value = '';
       document.getElementById('result-treno').innerHTML = '';
+      document.getElementById('map').style.display = 'none';
+      if (markerGroup) markerGroup.clearLayers();
       break;
     case 'stazione':
       document.getElementById('input-stazione').value = '';
@@ -247,6 +249,9 @@ async function cercaTreno() {
   const el = document.getElementById('result-treno');
   el.innerHTML = loaderHTML('Ricerca treno in corso…');
 
+  // Nascondi mappa durante la ricerca
+  document.getElementById('map').style.display = 'none';
+
   try {
     const meta = await apiFetch({ action: 'cerca_treno', numero: num });
     if (!meta.codStazione) throw new Error('Stazione di partenza non trovata');
@@ -261,9 +266,14 @@ async function cercaTreno() {
     });
 
     el.innerHTML = renderAndamento(andamento, meta);
+
+    // Mostra mappa con i 3 marker (usa lat/lon dalle fermate dell'API)
+    updateTrainMap(andamento);
+
   } catch (e) {
     el.innerHTML = msgBox('error', 'triangle-exclamation',
       `Treno ${num} non trovato o non circolante oggi. (${e.message})`);
+    document.getElementById('map').style.display = 'none';
   }
 }
 
@@ -616,3 +626,110 @@ function renderSoluzioni(data, origNome, destNome) {
   });
 })();
 
+
+// LEAFLET 
+
+let trainMap    = null;
+let markerGroup = null;
+
+function initMap() {
+  if (trainMap) { setTimeout(() => trainMap.invalidateSize(), 150); return; }
+  trainMap = L.map('map').setView([42.5, 12.5], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(trainMap);
+  markerGroup = L.featureGroup().addTo(trainMap);
+}
+
+function makeIcon(color, symbol) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 48" width="36" height="48">
+    <path fill="${color}" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"
+      d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 30 18 30S36 31.5 36 18C36 8.06 27.94 0 18 0z"/>
+    <circle cx="18" cy="18" r="9" fill="rgba(255,255,255,0.22)"/>
+    <text x="18" y="23" text-anchor="middle" font-size="13" font-weight="bold"
+      font-family="Arial,sans-serif" fill="#fff">${symbol}</text>
+  </svg>`;
+  return L.divIcon({ html: svg, className: '', iconSize: [36,48], iconAnchor: [18,48], popupAnchor: [0,-50] });
+}
+
+const ICON_PARTENZA = makeIcon('#22d373', 'P');
+const ICON_ARRIVO   = makeIcon('#ff4757', 'A');
+const ICON_ULTIMA   = makeIcon('#4dabf7', 'U');
+
+/** Cache per non ripeere le stesse geocodifiche */
+const _coordCache = {};
+
+/** Geocodifica il nome di una stazione con Nominatim */
+async function geocodeStazione(nome) {
+  if (!nome || nome === '—') return null;
+  if (_coordCache[nome]) return _coordCache[nome];
+  try {
+    const res  = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(nome + ', Italia')}&format=json&limit=1`,
+      { headers: { 'Accept-Language': 'it' } }
+    );
+    const data = await res.json();
+    if (!data.length) return null;
+    const coords = [+data[0].lat, +data[0].lon];
+    _coordCache[nome] = coords;
+    return coords;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Mostra la mappa con 3 marker:
+ *   🟢 verde  (P) — stazione di partenza
+ *   🔴 rosso  (A) — stazione di arrivo
+ *   🔵 azzurro(U) — ultima stazione con rilevamento effettivo
+ */
+async function updateTrainMap(andamento) {
+  const fermate = andamento?.fermate ?? [];
+  if (!fermate.length) return;
+
+  document.getElementById('map').style.display = 'block';
+  initMap();
+  markerGroup.clearLayers();
+
+  const fermataPartenza = fermate[0];
+  const fermataArrivo   = fermate[fermate.length - 1];
+
+  const lastPassataIdx = [...fermate]
+    .map((f, i) => (f.actualFermataType && f.actualFermataType !== 0 ? i : -1))
+    .filter(i => i !== -1)
+    .pop() ?? -1;
+  const fermataUltima = lastPassataIdx >= 0 ? fermate[lastPassataIdx] : null;
+
+  const targets = [
+    { fermata: fermataPartenza, icon: ICON_PARTENZA, label: '🟢 <strong>Partenza</strong>' },
+    { fermata: fermataArrivo,   icon: ICON_ARRIVO,   label: '🔴 <strong>Arrivo</strong>'   },
+    { fermata: fermataUltima,   icon: ICON_ULTIMA,   label: '🔵 <strong>Ultima posizione</strong>' },
+  ];
+
+  // Geocodifica in parallelo
+  const coordsArr = await Promise.all(
+    targets.map(t => t.fermata ? geocodeStazione(t.fermata.stazione) : Promise.resolve(null))
+  );
+
+  const points = [];
+  targets.forEach(({ fermata, icon, label }, i) => {
+    if (!fermata || !coordsArr[i]) return;
+    // Non duplicare azzurro se coincide con la partenza
+    if (i === 2 && fermata.stazione === fermataPartenza.stazione) return;
+    L.marker(coordsArr[i], { icon })
+      .addTo(markerGroup)
+      .bindPopup(`${label}<br>${fermata.stazione ?? ''}`);
+    points.push(coordsArr[i]);
+  });
+
+  if (!points.length) return;
+
+  setTimeout(() => {
+    trainMap.invalidateSize();
+    points.length === 1
+      ? trainMap.setView(points[0], 10)
+      : trainMap.flyToBounds(L.latLngBounds(points), { padding: [60, 60], maxZoom: 12 });
+  }, 150);
+}
