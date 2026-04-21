@@ -654,8 +654,8 @@ function makeIcon(color, symbol) {
 }
 
 const ICON_PARTENZA = makeIcon('#22d373', 'P');
-const ICON_ARRIVO   = makeIcon('#ff4757', 'A');
-const ICON_ULTIMA   = makeIcon('#4dabf7', 'U');
+const ICON_ARRIVO   = makeIcon('#22d373', 'A');
+const ICON_ULTIMA   = makeIcon('#ff4757', 'U');
 
 /** Cache per non ripeere le stesse geocodifiche */
 const _coordCache = {};
@@ -679,12 +679,7 @@ async function geocodeStazione(nome) {
   }
 }
 
-/**
- * Mostra la mappa con 3 marker:
- *   🟢 verde  (P) — stazione di partenza
- *   🔴 rosso  (A) — stazione di arrivo
- *   🔵 azzurro(U) — ultima stazione con rilevamento effettivo
- */
+/** MAPPA LEAFLET **/
 async function updateTrainMap(andamento) {
   const fermate = andamento?.fermate ?? [];
   if (!fermate.length) return;
