@@ -45,7 +45,7 @@ ENDPOINT API:
 
 - Auto completa stazione
 
-GET http://localhost/..path../webapptreni/src/backend//api.php?action=autocompleta_stazione&q={testo}
+GET http://localhost/..path../webapptreni/src/backend/api.php?action=autocompleta_stazione&q={testo}
 
 testo: nome della stazione
 
@@ -53,7 +53,7 @@ ritorna un file json con nome e id della stazione
 
 - Cerca treno per un numero
 
-GET http://localhost/..path../webapptreni/src/backend//api.php?action=cerca_treno&numero{numerotreno}
+GET http://localhost/..path../webapptreni/src/backend/api.php?action=cerca_treno&numero{numerotreno}
 
 numerotreno: numero del treno
 
